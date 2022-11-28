@@ -1,0 +1,1 @@
+(each (range 65 70) (fn ('e) (printc e) (printc 10)))

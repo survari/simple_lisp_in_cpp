@@ -1,0 +1,13 @@
+**/slicpp
+**/main
+**/a.out
+
+**/cmake_install.cmake
+**/CTestTestfile.cmake
+**/Makefile
+**/CMakeCache.txt
+**/DartConfiguration.tcl
+**/Testing
+**/build
+**/CMakeFiles
+**/.vscode
