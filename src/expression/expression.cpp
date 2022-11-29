@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "expression.hpp"
 
 using namespace ll;
@@ -20,7 +22,7 @@ bool SExpression::isEvaluable() const {
 }
 
 List* SExpression::getList() {
-    return &this->list;
+    return this->list;
 }
 
 SExpression SExpression::eval() {

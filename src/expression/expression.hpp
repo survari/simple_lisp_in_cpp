@@ -1,9 +1,9 @@
 #ifndef EXPRESSION_HPP
 #define EXPRESSION_HPP
 
-#include "../llist/list.hpp"
-
 namespace ll {
+    class List;
+
     enum ExpressionType {
         // Unevaluable
         ET_Word,
@@ -16,7 +16,7 @@ namespace ll {
     };
 
     class SExpression {
-        List list;
+        List* list;
         ExpressionType type;
 
     public:

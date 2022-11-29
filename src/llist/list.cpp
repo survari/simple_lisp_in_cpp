@@ -1,48 +1,74 @@
+#include "../../include/BeeNum/Brat.h"
+
+#include <string.h>
 #include "list.hpp"
+#include "helpers.hpp"
 
-ll::ListValue::ListValue() {}
-ll::ListValue::~ListValue() {}
+using namespace ll;
 
-ll::ListValue::ListValue(ll::ListValue* v) {
+ListValue::ListValue() {}
+ListValue::~ListValue() {}
+
+ListValue::ListValue(ListValue* v):
+    word(v->word),
+    number(v->number),
+    list(v->list) {}
+
+ListValue::ListValue(BeeNum::Brat number) {
+    this->number = number;
+}
+
+ListValue::ListValue(std::string word) {
+    this->word = word;
+}
+
+ListValue::ListValue(List* list) {
+    this->list = list;
 }
 
 
-ll::ListElement::ListElement():
+ListElement::ListElement():
     next(NULL),
     previous(NULL) {}
 
-ll::ListElement::ListElement(ll::ListValue v):
-    value(&v),
+ListElement::ListElement(ListValue* v):
+    value(v),
     next(NULL),
     previous(NULL) {}
 
-ll::ListElement* ll::ListElement::getNext() {
+ListElement::ListElement(const ListElement &elem):
+    value(elem.value),
+    next(elem.next),
+    previous(elem.previous) {
+}
+
+ListElement* ListElement::getNext() {
     if (this->next == NULL)
         throw std::runtime_error("there is no next element.");
 
     return this->next;
 }
 
-ll::ListElement* ll::ListElement::getPrevious() {
+ListElement* ListElement::getPrevious() {
     if (this->next == NULL)
         throw std::runtime_error("there is no previous element.");
 
     return this->previous;
 }
 
-void ll::ListElement::setNext(ListElement* elem) {
+void ListElement::setNext(ListElement* elem) {
     this->next = elem;
 }
 
-void ll::ListElement::setPrevious(ListElement* elem) {
+void ListElement::setPrevious(ListElement* elem) {
     this->previous = elem;
 }
 
-ll::ListValue* ll::ListElement::getValue() {
+ListValue* ListElement::getValue() {
     return &this->value;
 }
 
-void ll::ListElement::remove() {
+void ListElement::remove() {
     if (this->next != NULL) {
         this->previous->next = this->next;
         this->next->previous = this->previous;
@@ -54,19 +80,19 @@ void ll::ListElement::remove() {
 }
 
 
-ll::ListElement* ll::List::getFirst() {
+ListElement* List::getFirst() {
     return this->first;
 }
 
-ll::ListElement* ll::List::getLast() {
+ListElement* List::getLast() {
     return this->last;
 }
 
-ll::ListElement* ll::List::getTail() {
+ListElement* List::getTail() {
     return this->first->getNext();
 }
 
-ll::ListElement* ll::List::popLast() {
+ListElement* List::popLast() {
     ListElement* elem = this->last;
 
     if (this->last != NULL && this->last->getPrevious() != NULL) {
@@ -81,7 +107,7 @@ ll::ListElement* ll::List::popLast() {
     return elem;
 }
 
-ll::ListElement* ll::List::popFirst() {
+ListElement* List::popFirst() {
     ListElement* elem = this->first;
 
     if (this->first != NULL && this->first->getNext() != NULL) {
@@ -96,7 +122,9 @@ ll::ListElement* ll::List::popFirst() {
     return elem;
 }
 
-ll::ListElement* ll::List::insert(ListElement* elem) {
+ListElement* List::insert(ListElement* elem) {
+    elem = new ListElement(*elem);
+
     if (this->first == NULL) {
         this->first = elem;
 
@@ -114,7 +142,9 @@ ll::ListElement* ll::List::insert(ListElement* elem) {
     return elem;
 }
 
-ll::ListElement* ll::List::append(ListElement* elem) {
+ListElement* List::append(ListElement* elem) {
+    elem = new ListElement(*elem);
+
     if (this->last == NULL) {
         this->last = elem;
 
@@ -131,4 +161,46 @@ ll::ListElement* ll::List::append(ListElement* elem) {
 
     this->size++;
     return elem;
+}
+
+List* List::insertList(List* elem) {
+    return helpers::list_insert_list(this, elem->last);
+}
+
+List* List::appendList(List* elem) {
+    return helpers::list_append_list(this, elem->first);
+}
+
+
+List* ListElement::getTags() {
+    return this->tags;
+}
+
+bool ListElement::hasTag(const std::string &tag) {
+    return this->tags->indexOf(tag) >= 0;
+}
+
+void ListElement::addTag(const std::string &tag) {
+    this->tags->insert(new ListElement(new ListValue(tag)));
+}
+
+List* List::getTags() {
+    return helpers::list_add_tag(this, new List(), this->first);
+}
+
+bool List::hasTag(const std::string &tag) {
+    return helpers::list_has_tag(this->first, tag);
+}
+
+int List::indexOf(std::string word) {
+    return helpers::list_indexof(this->first, word, 0);
+}
+
+int List::indexOf(BeeNum::Brat num) {
+    return helpers::list_indexof(this->first, num, 0);
+}
+
+bool List::isEqualTo(List* l) {
+    throw std::runtime_error("UNIMPLEMENTED LIST::ISEQUALTO");
+    return false;
 }

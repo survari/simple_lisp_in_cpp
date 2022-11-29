@@ -4,9 +4,8 @@
 #include <functional>
 #include <string>
 
-#include "../expression/expression.hpp"
-
 namespace ll {
+    class SExpression;
     class Runtime;
 
     class Builtin {

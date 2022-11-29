@@ -2,6 +2,7 @@
 #define RUNTIME_HPP
 
 #include <vector>
+#include <string>
 
 #include "../builtin/builtin.hpp"
 
