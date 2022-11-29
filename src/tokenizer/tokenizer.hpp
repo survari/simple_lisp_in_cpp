@@ -4,9 +4,8 @@
 #include <iostream>
 #include <vector>
 
+#include "../../include/ll_std.h"
 #include "../runtime/runtime.hpp"
-
-typedef unsigned long long usize;
 
 namespace ll {
     enum TokenType {
