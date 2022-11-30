@@ -1,3 +1,4 @@
+#include <string>
 #include <iostream>
 #include <regex>
 
@@ -5,6 +6,14 @@
 #include "../runtime/runtime.hpp"
 
 using namespace ll;
+
+Token::Token():
+    line(0),
+    column(0),
+    filename("<unknown_file>"),
+    value("<unknown_value>"),
+    type(TT_Unknown) {
+}
 
 Token::Token(const std::string &filename,
     usize line,
@@ -41,7 +50,23 @@ void Token::setType(TokenType t) {
     this->type = t;
 }
 
-std::string Token::toErrorMessage() {
+void Token::setColumn(usize column) {
+    this->column = column;
+}
+
+void Token::setLine(usize line) {
+    this->line = line;
+}
+
+void Token::setFilename(std::string filename) {
+    this->filename = filename;
+}
+
+void Token::setValue(std::string value) {
+    this->value = value;
+}
+
+std::string Token::toErrorMessage() const {
     return std::string(this->getFilename() + ":"
         + std::to_string(this->getLine()) + ":"
         + std::to_string(this->getColumn()) + ": "

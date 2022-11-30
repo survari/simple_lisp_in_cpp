@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<ll::Token> tokens = ll::Tokenizer::tokenize(runt, filename, source);
     ll::SExpression root = ll::Parser::parse(tokens);
+    root.visualize();
 
     root.eval();
 }

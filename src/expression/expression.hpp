@@ -1,9 +1,10 @@
 #ifndef EXPRESSION_HPP
 #define EXPRESSION_HPP
 
-namespace ll {
-    class List;
+#include <vector>
+#include "../tokenizer/tokenizer.hpp"
 
+namespace ll {
     enum ExpressionType {
         // Unevaluable
         ET_Word,
@@ -16,15 +17,26 @@ namespace ll {
     };
 
     class SExpression {
-        List* list;
+        // List* list;
+        Token value;
+        std::vector<SExpression> list;
+        std::vector<std::string> tags;
         ExpressionType type;
 
     public:
         SExpression();
+        SExpression(const Token &value);
+        SExpression(ExpressionType type);
+
+        SExpression* addSExpression(SExpression v);
+        const std::vector<std::string> &getTags() const;
+        std::vector<std::string> getTagsRecursive() const;
 
         bool isEvaluable() const;
-        List* getList();
+        std::vector<SExpression>* getList();
         SExpression eval();
+
+        void visualize() const;
     };
 }
 

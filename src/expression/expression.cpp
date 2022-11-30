@@ -1,11 +1,25 @@
 #include <iostream>
 
+#include "../llist/list.hpp"
 #include "expression.hpp"
+#include "../tokenizer/tokenizer.hpp"
 
 using namespace ll;
 
 SExpression::SExpression() {
 
+}
+
+SExpression::SExpression(const Token &value) {
+    this->value.setType(value.getType());
+    this->value.setColumn(value.getColumn());
+    this->value.setLine(value.getLine());
+    this->value.setFilename(value.getFilename());
+    this->value.setValue(value.getValue());
+}
+
+SExpression::SExpression(ExpressionType type) {
+    this->type = type;
 }
 
 bool SExpression::isEvaluable() const {
@@ -21,8 +35,8 @@ bool SExpression::isEvaluable() const {
     }
 }
 
-List* SExpression::getList() {
-    return this->list;
+std::vector<SExpression> *SExpression::getList() {
+    return &this->list;
 }
 
 SExpression SExpression::eval() {
@@ -45,4 +59,52 @@ SExpression SExpression::eval() {
     }
 
     return SExpression();
+}
+
+SExpression* SExpression::addSExpression(SExpression v) {
+    this->list.push_back(v);
+    return this;
+}
+
+const std::vector<std::string> &SExpression::getTags() const {
+    return this->tags;
+}
+
+std::vector<std::string> SExpression::getTagsRecursive() const {
+    std::vector<std::string> tags;
+
+    if (this->list.size() > 0) {
+        for (const SExpression &l : this->list) {
+            for (const std::string &t : l.getTagsRecursive()) {
+                tags.push_back(t);
+            }
+        }
+
+        return tags;
+    } else {
+        return this->tags;
+    }
+}
+
+void SExpression::visualize() const {
+    for (const std::string &t : this->tags) {
+        std::cout << ":" << t << " ";
+    }
+
+    if (this->list.size() > 0) {
+        std::cout << "(";
+
+        for (const SExpression &e : this->list) {
+            e.visualize();
+            std::cout << " ";
+        }
+
+        std::cout << "\b)";
+
+    } else {
+        if (this->value.getType() == TokenType::TT_String)
+            std::cout << "\"" << this->value.getValue() << "\"";
+        else
+            std::cout << this->value.getValue();
+    }
 }

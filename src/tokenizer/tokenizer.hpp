@@ -21,15 +21,16 @@ namespace ll {
 
     class Token {
     private:
-        const usize line;
-        const usize column;
+        usize line;
+        usize column;
 
-        const std::string filename;
-        const std::string value;
+        std::string filename;
+        std::string value;
 
         TokenType type;
 
     public:
+        Token();
         Token(const std::string &filename,
             usize line,
             usize column,
@@ -37,13 +38,17 @@ namespace ll {
             const std::string &value);
 
         void setType(TokenType t);
+        void setColumn(usize column);
+        void setLine(usize line);
+        void setFilename(std::string filename);
+        void setValue(std::string value);
 
         usize getLine() const;
         usize getColumn() const;
         const std::string &getFilename() const;
         const std::string &getValue() const;
         const TokenType &getType() const;
-        std::string toErrorMessage();
+        std::string toErrorMessage() const;
     };
 
     class Tokenizer {
