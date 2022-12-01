@@ -4,6 +4,8 @@
 
 # we can define objects like this!
 (let person (:name "abert" :alter "53"))
+
+# maybe don't allow this
 (println person.name)       # albert    - is formed into (of person 'name) || a.b.c => (of (of a "b") "c")
 (println (of person 'name)) # albert    - of is the same as .; of works with both words and strings
 (eval "person.name")        # evaluates into and is the same as (eval person.name) => albert
@@ -16,3 +18,5 @@
 
 # wordstring: turns words (like n) into strings (like "n")
 (debug (each (tags person) (wordstring e))) # ("name" "albert")
+
+-34e4
