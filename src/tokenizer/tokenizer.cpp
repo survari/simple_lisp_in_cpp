@@ -2,8 +2,11 @@
 #include <iostream>
 #include <regex>
 
-#include "tokenizer.hpp"
 #include "../runtime/runtime.hpp"
+#include "../../include/BeeNum/Brat.h"
+#include "../../include/BeeNum/Math.h"
+
+#include "tokenizer.hpp"
 
 using namespace ll;
 
@@ -117,7 +120,7 @@ bool is_int_number(const std::string &value) {
 }
 
 bool is_number(const std::string &value) {
-    return std::regex_match(value, std::regex("^([+-]|)(0x[0-9abcdef]+|0b[0-1]+|([1-9]+[0-9]*|0)(\\.[0-9]+|)([eE][1-9]+[0-9]*|))$"));
+    return std::regex_match(value, std::regex("^([+-]|)(0x[0-9abcdef]+|0b[0-1]+|([1-9]+[0-9]*|0)(\\.[0-9]+|)([eE](-|)[1-9]+[0-9]*|))$"));
 }
 
 bool is_word(const std::string &value) {
@@ -132,6 +135,56 @@ bool is_tag(const std::string &value) {
     return std::regex_match(value, std::regex("^:[a-zA-Z]+[a-zA-Z0-9-_]*$"));
 }
 
+BeeNum::Brat parse_number(const std::string &value) {
+    // 1234.5678e9
+    std::string base = "";      // 1234             m=0
+    std::string decimal = "";   // 5678             m=1
+    int exponent = 1;           // 9                m=2
+
+    std::string tmp = "";
+    int mode = 0; // mode = m
+
+    for (char c : value) {
+        if (c == '.') {
+            base = tmp;
+            tmp = "";
+
+            mode = 1; // decimal is next
+            continue;
+        }
+
+        if (c == 'e' || c == 'E') {
+            if (mode == 0) {
+                base = tmp;
+                tmp = "";
+
+            } else if (mode == 1) {
+                decimal = tmp;
+                tmp = "";
+            }
+
+            mode = 2;
+            continue;
+        }
+
+        tmp += c;
+    }
+
+    if (tmp != "") {
+        if (mode == 1) {
+            decimal = tmp;
+        } else if (mode == 2) {
+            exponent = std::stoi(tmp);
+        }
+    }
+
+    if (exponent < 0) {
+        return (BeeNum::Brat(base+decimal)) / BeeNum::Math::pow(BeeNum::Brat(10), decimal.size()) / BeeNum::Math::pow(BeeNum::Brat(10), abs(exponent));
+    } else {
+        return (BeeNum::Brat(base+decimal)) / (BeeNum::Math::pow(BeeNum::Brat(10), decimal.size()) * BeeNum::Math::pow(BeeNum::Brat(10), exponent));
+    }
+}
+
 bool push(const ll::Runtime &runt, std::vector<Token> *tokens, Token t) {
     if (t.getStrValue() == "") {
         return true;
@@ -139,12 +192,12 @@ bool push(const ll::Runtime &runt, std::vector<Token> *tokens, Token t) {
 
     if (t.getType() == TokenType::TT_Unknown) {
         if (is_number(t.toString())) {
-            if (!is_int_number(t.toString())) {
-                throw std::runtime_error("error: TODO: add number parsing from 3.45e4 to 345(*10000)/100 => 3450000/100 and 3.45e-4 to 345/100*(1/10000) => 345/1000000! at "+t.toErrorMessage());
-            }
+            // if (!is_int_number(t.toString())) {
+            //     throw std::runtime_error("error: TODO: add number parsing from 3.45e4 to 345(*10000)/100 => 3450000/100 and 3.45e-4 to 345/100*(1/10000) => 345/1000000! at "+t.toErrorMessage());
+            // }
 
             t.setType(TokenType::TT_Number);
-            t.setValue(BeeNum::Brat(t.getStrValue()));
+            t.setValue(parse_number(t.getStrValue()));
 
         } else if (is_builtin(runt, t.toString())) {
             t.setType(TokenType::TT_Builtin);

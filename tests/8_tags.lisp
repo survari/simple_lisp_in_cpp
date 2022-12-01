@@ -18,5 +18,3 @@
 
 # wordstring: turns words (like n) into strings (like "n")
 (debug (each (tags person) (wordstring e))) # ("name" "albert")
-
--34e4

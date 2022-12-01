@@ -34,6 +34,7 @@ SExpression parse_expression(const std::vector<Token> &tokens,
 
             } else if (tokens[*index].getType() == TokenType::TT_Word) { // 'word is actually a word, not an identifier!
                 type = ET_Word;
+                
             } else {
                 throw std::runtime_error("error: could not make symbol unevaluable: "+tokens[*index].toErrorMessage());
                 exit(1);
