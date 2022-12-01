@@ -48,20 +48,31 @@ std::vector<SExpression> *SExpression::getList() {
 SExpression SExpression::eval() {
     if (this->isEvaluable()) {
         switch (this->type) {
-            case ExpressionType::ET_Identifier: // Variable: a=13
-                std::cout << "UNIMPLEMENTED: EVAL VARIABLE" << std::endl;
+            case ExpressionType::ET_Identifier: // Variable or Builtin: a=13
+                std::cout << "UNIMPLEMENTED: EVAL VARIABLE " << this->value.toErrorMessage() << std::endl;
                 break;
 
             case ExpressionType::ET_Instruction: // Instruction (a 1 2 3) = return value of a(1, 2, 3)
-                std::cout << "UNIMPLEMENTED: EVAL VARIABLE" << std::endl;
+                std::cout << "UNIMPLEMENTED: EVAL INSTRUCTION "  << this->value.toErrorMessage() << std::endl;
                 break;
+
+            case ExpressionType::ET_List: {
+                SExpression evaluated = *this;
+                evaluated.list.clear();
+
+                for (SExpression &ex : *this->getList()) {
+                    evaluated.addSExpression(ex.eval());
+                }
+
+                return evaluated;
+            }
 
             default:
                 break;
         }
 
     } else {
-
+        return SExpression(*this);
     }
 
     return SExpression();

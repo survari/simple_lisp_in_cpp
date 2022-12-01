@@ -44,7 +44,7 @@ namespace ll {
         std::vector<std::string> getTagsRecursive() const;
 
         bool isEvaluable() const;
-        std::vector<SExpression>* getList();
+        std::vector<SExpression> *getList();
         SExpression eval();
 
         void visualize(int indentation=0) const;

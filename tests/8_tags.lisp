@@ -2,6 +2,8 @@
 ("ABC")         # becomes (:str 65 66 67)
 :str ("ABC")    # is not equivalent, but (debug ...) will handle both (:str ...) and :str (...) as strings
 
+person
+
 # we can define objects like this!
 (let person (:name "abert" :alter "53"))
 

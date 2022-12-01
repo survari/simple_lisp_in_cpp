@@ -206,7 +206,7 @@ bool push(const ll::Runtime &runt, std::vector<Token> *tokens, Token t) {
             t.setType(TokenType::TT_Word);
 
         } else if (is_tag(t.toString())) {
-            t.setType(TokenType::TT_Word);
+            t.setType(TokenType::TT_Tag);
 
         } else {
             return false;

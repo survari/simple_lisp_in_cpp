@@ -14,10 +14,14 @@ SExpression parse_expression(const std::vector<Token> &tokens,
     SExpression expression;
     std::vector<std::string> current_tags;
 
+    if (*index < tokens.size()) {
+        expression = SExpression(tokens[*index], ET_Unknown);
+    }
+
     expression.setType(type);
     expression.addTags(expression_tags);
 
-    bool is_unevaluable;
+    bool is_unevaluable = false;
 
     /* TODO:
         - :tags - DONE
@@ -49,6 +53,7 @@ SExpression parse_expression(const std::vector<Token> &tokens,
         }
 
         if (tokens[*index].getType() == TokenType::TT_Tag) {
+            // std::cout << "ADD TAG: " << tokens[*index].getStrValue() << std::endl;
             current_tags.push_back(tokens[*index].getStrValue());
             continue;
         }

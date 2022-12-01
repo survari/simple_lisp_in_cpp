@@ -32,7 +32,11 @@ int main(int argc, char* argv[]) {
 
     std::vector<ll::Token> tokens = ll::Tokenizer::tokenize(runt, filename, source);
     ll::SExpression root = ll::Parser::parse(tokens);
-    root.visualize();
-
-    root.eval();
+    
+    for (ll::SExpression ex : *root.getList()) {
+        std::cout << "EVAL ------------------------" << std::endl;
+        ex.visualize();
+        std::cout << std::endl;
+        ex.eval();
+    }
 }
