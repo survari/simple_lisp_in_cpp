@@ -11,7 +11,10 @@ std::string Variable::getName() {
     return this->name;
 }
 
-SExpression* Variable::getValue() {
+SExpression* Variable::getValue(Runtime* runtime, SExpression* parent) {
+    if (!this->evaluated)
+        this->value = new SExpression(this->value->eval(runtime, parent));
+
     return this->value;
 }
 

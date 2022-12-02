@@ -22,7 +22,7 @@ namespace ll {
             bool hasVariable(const std::string &name);
             bool localHasVariable(const std::string &name);
 
-            void addVariable(const std::string &name, Variable v);
+            void addVariable(const std::string &name, Variable v, Runtime* runtime, SExpression* expression);
             void setVariable(const std::string &name, SExpression *value);
     };
 }

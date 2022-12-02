@@ -53,11 +53,11 @@ bool Scope::localHasVariable(const std::string &name) {
     return false;
 }
 
-void Scope::addVariable(const std::string &name, Variable v) {
+void Scope::addVariable(const std::string &name, Variable v, Runtime* runtime, SExpression* expression) {
     if (!localHasVariable(name)) {
         this->variables.push_back(v);
     } else {
-        setVariable(name, new SExpression(*v.getValue()));
+        setVariable(name, new SExpression(*v.getValue(runtime, expression)));
     }
 }
 
