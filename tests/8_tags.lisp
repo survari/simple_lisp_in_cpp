@@ -1,11 +1,12 @@
 # strings are number-arrays with the first element having the string tag
 ("ABC")         # becomes (:str 65 66 67)
-:str ("ABC")    # is not equivalent, but (debug ...) will handle both (:str ...) and :str (...) as strings
-
-person
+(:str "ABC")    # is not equivalent, but (debug ...) will handle both (:str ...) and :str (...) as strings
 
 # we can define objects like this!
-(let person (:name "abert" :alter "53"))
+(let 'person (:name "abert" :alter "53"))
+
+person
+person.name
 
 # maybe don't allow this
 (println person.name)       # albert    - is formed into (of person 'name) || a.b.c => (of (of a "b") "c")
@@ -19,4 +20,8 @@ person
 (debug (tags person))   # (name alter)
 
 # wordstring: turns words (like n) into strings (like "n")
-(debug (each (tags person) (wordstring e))) # ("name" "albert")
+(debug (each (tags person) (wordstr e))) # ("name" "albert")
+
+(if (< 100 200)
+    (fn () (print "100 < 200!"))
+    (fn () (print "100 > 200!")))
