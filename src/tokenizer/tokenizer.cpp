@@ -59,7 +59,7 @@ const std::string &Token::getStrValue() const {
 
 std::string Token::toString() const {
     if (this->type == TT_Number) {
-        return this->num_value.toString();
+        return this->num_value.lisp_format_string();
     }
 
     return this->str_value;
@@ -139,7 +139,7 @@ BeeNum::Brat parse_number(const std::string &value) {
     // 1234.5678e9
     std::string base = "";      // 1234             m=0
     std::string decimal = "";   // 5678             m=1
-    int exponent = 1;           // 9                m=2
+    int exponent = 0;           // 9                m=2
 
     std::string tmp = "";
     int mode = 0; // mode = m
@@ -175,6 +175,8 @@ BeeNum::Brat parse_number(const std::string &value) {
             decimal = tmp;
         } else if (mode == 2) {
             exponent = std::stoi(tmp);
+        } else {
+            base = tmp;
         }
     }
 
@@ -192,10 +194,6 @@ bool push(const ll::Runtime &runt, std::vector<Token> *tokens, Token t) {
 
     if (t.getType() == TokenType::TT_Unknown) {
         if (is_number(t.toString())) {
-            // if (!is_int_number(t.toString())) {
-            //     throw std::runtime_error("error: TODO: add number parsing from 3.45e4 to 345(*10000)/100 => 3450000/100 and 3.45e-4 to 345/100*(1/10000) => 345/1000000! at "+t.toErrorMessage());
-            // }
-
             t.setType(TokenType::TT_Number);
             t.setValue(parse_number(t.getStrValue()));
 
@@ -206,6 +204,7 @@ bool push(const ll::Runtime &runt, std::vector<Token> *tokens, Token t) {
             t.setType(TokenType::TT_Word);
 
         } else if (is_tag(t.toString())) {
+            t.setValue(t.toString().substr(1, t.toString().size()));
             t.setType(TokenType::TT_Tag);
 
         } else {

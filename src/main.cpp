@@ -9,6 +9,7 @@
 #include "tokenizer/tokenizer.hpp"
 #include "parser/parser.hpp"
 #include "runtime/runtime.hpp"
+#include "variable/scope.hpp"
 
 std::string read_file(const std::string &filename) {
     std::ifstream t(filename);
@@ -19,24 +20,17 @@ std::string read_file(const std::string &filename) {
 }
 
 int main(int argc, char* argv[]) {
-    BeeNum::Brat a(34534534, "9");
-    a *= 2;
-    a = BeeNum::Math::pow(a, 10);
-    std::cout << a << std::endl;
-
     std::string filename = argv[argc-1];
     std::string source = read_file(filename);
 
+    ll::Scope root_scope = ll::Scope();
     ll::Runtime runt = ll::Runtime();
     runt.init();
 
     std::vector<ll::Token> tokens = ll::Tokenizer::tokenize(runt, filename, source);
-    ll::SExpression root = ll::Parser::parse(tokens);
-    
+    ll::SExpression root = ll::Parser::parse(tokens, &root_scope);
+
     for (ll::SExpression ex : *root.getList()) {
-        std::cout << "EVAL ------------------------" << std::endl;
-        ex.visualize();
-        std::cout << std::endl;
-        ex.eval();
+        ex.eval(&runt, &root);
     }
 }

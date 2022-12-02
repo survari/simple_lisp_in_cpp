@@ -9,7 +9,7 @@
 namespace ll {
     class Parser {
     public:
-        static SExpression parse(std::vector<Token> tokens);
+        static SExpression parse(std::vector<Token> tokens, Scope* scope);
     };
 }
 

@@ -5,6 +5,8 @@
 #include "../tokenizer/tokenizer.hpp"
 
 namespace ll {
+    class Scope;
+
     enum ExpressionType {
         // Unevaluable
         ET_Word,        // like 'a. is a name, will not be evaluated!
@@ -27,10 +29,11 @@ namespace ll {
         std::vector<SExpression> list;
         std::vector<std::string> tags;
         ExpressionType type;
+        Scope* scope;
 
     public:
         SExpression();
-        SExpression(const Token &value, ExpressionType type);
+        SExpression(const Token &value, ExpressionType type, const std::vector<std::string> &tags, Scope* parent_scope);
         SExpression(ExpressionType type);
 
         SExpression* addSExpression(SExpression v);
@@ -42,10 +45,13 @@ namespace ll {
         bool includesTagRecursive(const std::string &tag) const;
         const std::vector<std::string> &getTags() const;
         std::vector<std::string> getTagsRecursive() const;
+        ExpressionType getType() const;
+        const Token &getValue() const;
+        Scope *getScope();
 
         bool isEvaluable() const;
         std::vector<SExpression> *getList();
-        SExpression eval();
+        SExpression eval(Runtime* runtime, SExpression* parent);
 
         void visualize(int indentation=0) const;
     };

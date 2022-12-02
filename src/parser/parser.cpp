@@ -9,13 +9,14 @@ SExpression parse_expression(const std::vector<Token> &tokens,
     usize* index,
     usize indentation_level,
     std::vector<std::string> expression_tags,
-    ExpressionType type) {
+    ExpressionType type,
+    Scope* parent) {
 
     SExpression expression;
     std::vector<std::string> current_tags;
 
     if (*index < tokens.size()) {
-        expression = SExpression(tokens[*index], ET_Unknown);
+        expression = SExpression(tokens[*index], ET_Unknown, {}, parent);
     }
 
     expression.setType(type);
@@ -23,22 +24,14 @@ SExpression parse_expression(const std::vector<Token> &tokens,
 
     bool is_unevaluable = false;
 
-    /* TODO:
-        - :tags - DONE
-        - 'unevaluable ('() => list, 'a => word)
-        - "strings" - DONE
-        - identifiers (a => (:b 1 :c 2), a.b => 1)
-    */
-
     for (; (*index) < tokens.size(); (*index)++) {
-        if (is_unevaluable) {
-            // TODO: check for parentheses => list / word => word
+        if (is_unevaluable) { // check for apostroph to make things unevaluable
             if (tokens[*index].getType() == TokenType::TT_ParenthesesOpen) {
                 type = ET_List;
 
             } else if (tokens[*index].getType() == TokenType::TT_Word) { // 'word is actually a word, not an identifier!
                 type = ET_Word;
-                
+
             } else {
                 throw std::runtime_error("error: could not make symbol unevaluable: "+tokens[*index].toErrorMessage());
                 exit(1);
@@ -53,7 +46,10 @@ SExpression parse_expression(const std::vector<Token> &tokens,
         }
 
         if (tokens[*index].getType() == TokenType::TT_Tag) {
-            // std::cout << "ADD TAG: " << tokens[*index].getStrValue() << std::endl;
+            if (expression.getList()->size() == 0 && expression.getType() == ExpressionType::ET_Instruction) {
+                expression.setType(ET_List);
+            }
+
             current_tags.push_back(tokens[*index].getStrValue());
             continue;
         }
@@ -65,15 +61,23 @@ SExpression parse_expression(const std::vector<Token> &tokens,
                 type = ExpressionType::ET_Instruction;
             }
 
-            expression.addSExpression(parse_expression(tokens, index, indentation_level+1, current_tags, type));
+            expression.addSExpression(parse_expression(tokens, index, indentation_level+1, current_tags, type, parent));
             current_tags.clear();
             type = ExpressionType::ET_Unknown;
 
         } else if (tokens[*index].getType() == TokenType::TT_ParenthesesClose) {
+            if (expression.getType() == ExpressionType::ET_Instruction && expression.getList()->size() == 0) {
+                expression.setType(ExpressionType::ET_List);
+            }
+
             return expression;
 
         } else if (tokens[*index].getType() == TokenType::TT_String) {
-            SExpression list = SExpression(ExpressionType::ET_List);
+            if (expression.getList()->size() == 0 && expression.getType() == ExpressionType::ET_Instruction) {
+                expression.setType(ET_List);
+            }
+
+            SExpression list = SExpression(tokens[*index], ExpressionType::ET_List, current_tags, parent);
             list.addTag("str");
 
             for (usize c : tokens[*index].toString()) {
@@ -82,7 +86,7 @@ SExpression parse_expression(const std::vector<Token> &tokens,
                 t.setValue(BeeNum::Brat(c));
                 t.setType(TT_Number);
 
-                list.addSExpression(SExpression(t, ExpressionType::ET_Number));
+                list.addSExpression(SExpression(t, ExpressionType::ET_Number, {}, parent));
             }
 
             expression.addSExpression(list);
@@ -92,22 +96,32 @@ SExpression parse_expression(const std::vector<Token> &tokens,
 
         } else if (tokens[*index].getType() == TokenType::TT_Word) {
             if (type == ExpressionType::ET_Unknown) {
-                type = ExpressionType::ET_Identifier;
+                SExpression ex = SExpression(tokens[*index], ExpressionType::ET_Identifier, current_tags, parent);
+                // convert a.b.c.d (EXPRESSION) => (of (of (of a 'b) 'c) 'd) (EXPRESSION)
+                // go backwards => d c b a, add parentheses and of => (of (of (of a 'b) 'c) 'd)
+
+                expression.addSExpression(ex);
+
+            } else {
+                expression.addSExpression(SExpression(tokens[*index], type, current_tags, parent));
             }
 
-            expression.addSExpression(SExpression(tokens[*index], type));
             current_tags.clear();
             type = ExpressionType::ET_Unknown;
 
         } else if (tokens[*index].getType() == TokenType::TT_Number) {
+            if (expression.getList()->size() == 0 && expression.getType() == ExpressionType::ET_Instruction) {
+                expression.setType(ET_List);
+            }
+
             type = ExpressionType::ET_Number;
-            expression.addSExpression(SExpression(tokens[*index], type));
+            expression.addSExpression(SExpression(tokens[*index], type, current_tags, parent));
             current_tags.clear();
             type = ExpressionType::ET_Unknown;
 
         }  else if (tokens[*index].getType() == TokenType::TT_Builtin) {
             type = ExpressionType::ET_Identifier;
-            expression.addSExpression(SExpression(tokens[*index], type));
+            expression.addSExpression(SExpression(tokens[*index], type, current_tags, parent));
             current_tags.clear();
             type = ExpressionType::ET_Unknown;
 
@@ -128,9 +142,9 @@ SExpression parse_expression(const std::vector<Token> &tokens,
     exit(1);
 }
 
-SExpression Parser::parse(std::vector<Token> tokens) {
+SExpression Parser::parse(std::vector<Token> tokens, Scope* root_scope) {
     usize index = 0;
-    SExpression e = parse_expression(tokens, &index, 0, { "root" }, ExpressionType::ET_List);
+    SExpression e = parse_expression(tokens, &index, 0, { "root" }, ExpressionType::ET_List, root_scope);
 
     if (index < tokens.size()) {
         throw std::runtime_error(std::string("parse_expression: error: too many parantheses after ") +
