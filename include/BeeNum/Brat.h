@@ -57,6 +57,7 @@ public:
 	std::string point(const uint64_t num) const;
 	std::string point(const uint64_t num, const uint64_t base) const;
 	operator std::string() const;
+    std::string lisp_format_string() const;
 
 	// Arithmetics
 	Brat operator ++ (int); // postfix
@@ -98,7 +99,7 @@ public:
 	bool operator < (const int64_t a) const;
 	bool operator > (const int64_t a) const;
 	//*/
-};
+    };
 
 // Input-output
 std::ostream& operator << (std::ostream& strm, const Brat& a);

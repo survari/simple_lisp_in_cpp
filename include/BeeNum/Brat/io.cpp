@@ -42,7 +42,65 @@ std::string Brat::base(const uint64_t base) const {
 }
 
 std::string Brat::point(const uint64_t num) const {
-	return point(num, 10);
+    return point(num, 10);
+}
+
+#define LISP_PRECISION 10
+std::string Brat::lisp_format_string() const {
+    std::string s = point(30, 10);
+    std::string decimals;
+    std::string base;
+    bool is_front = true;
+
+    while (!s.empty() && s[s.size() - 1] == '0') {
+        s.pop_back();
+    }
+
+    while (!s.empty()) {
+        char c = s[s.size() - 1];
+
+        if (c == '.') {
+            is_front = false;
+            s.pop_back();
+            continue;
+        }
+
+        if (is_front) {
+            decimals.insert(std::begin(decimals), c);
+        } else {
+            base.insert(std::begin(base), c);
+        }
+
+        s.pop_back();
+    }
+
+    int exponent = 0;
+
+    if (base == "0" || base.empty()) {
+        while (decimals.size() > LISP_PRECISION) {
+            exponent--;
+            decimals.erase(0, 1);
+        }
+
+        exponent--;
+        base = decimals[0];
+        decimals.erase(0, 1);
+
+    } else {
+        while (base.size() > LISP_PRECISION) {
+            exponent++;
+            decimals.insert(decimals.begin(), base[base.size()-1]);
+            base.pop_back();
+        }
+    }
+
+    while (decimals.size() > LISP_PRECISION) {
+        decimals.pop_back();
+    }
+
+    return base +
+        (decimals.empty() ? "" : "."+decimals) +
+        (exponent == 0 ? "" : "e"+std::to_string(exponent));
 }
 
 std::string Brat::point(const uint64_t num, const uint64_t base) const {
