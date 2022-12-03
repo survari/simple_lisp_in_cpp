@@ -7,13 +7,15 @@ Variable::Variable(const std::string &name, SExpression value) {
     this->value = new SExpression(value);
 }
 
-std::string Variable::getName() {
+std::string Variable::getName() const {
     return this->name;
 }
 
 SExpression* Variable::getValue(Runtime* runtime, SExpression* parent) {
-    if (!this->evaluated)
+    if (!this->evaluated) {
         this->value = new SExpression(this->value->eval(runtime, parent));
+        this->evaluated = true;
+    }
 
     return this->value;
 }

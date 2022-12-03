@@ -9,6 +9,8 @@
 #include "../runtime/runtime.hpp"
 
 namespace ll {
+    std::string read_file(const std::string &filename);
+
     enum TokenType {
         TT_Word,
         TT_Number,
@@ -66,7 +68,7 @@ namespace ll {
 
     class Tokenizer {
     public:
-        static std::vector<Token> tokenize(const Runtime &runt, const std::string &filename, const std::string &source);
+        static std::vector<Token> tokenize(Runtime *runt, const std::string &filename, const std::string &source);
         void visualize(const std::vector<Token> &tokens);
     };
 }

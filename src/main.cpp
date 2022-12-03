@@ -11,24 +11,17 @@
 #include "runtime/runtime.hpp"
 #include "variable/scope.hpp"
 
-std::string read_file(const std::string &filename) {
-    std::ifstream t(filename);
-    std::stringstream buffer;
-
-    buffer << t.rdbuf();
-    return buffer.str();
-}
-
 int main(int argc, char* argv[]) {
     std::string filename = argv[argc-1];
-    std::string source = read_file(filename);
+    std::string source = ll::read_file(filename);
 
     ll::Scope root_scope = ll::Scope();
     ll::Runtime runt = ll::Runtime();
     runt.init();
 
-    std::vector<ll::Token> tokens = ll::Tokenizer::tokenize(runt, filename, source);
+    std::vector<ll::Token> tokens = ll::Tokenizer::tokenize(&runt, filename, source);
     ll::SExpression root = ll::Parser::parse(tokens, &root_scope);
+    runt.setRoot(&root_scope);
 
     for (ll::SExpression ex : *root.getList()) {
         ex.eval(&runt, &root);

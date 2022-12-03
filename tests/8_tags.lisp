@@ -1,3 +1,9 @@
+(load "inc/stdio.lisp")
+
+(let 'a (fn ('b) (each b (fn ('e) (printc e)))))
+(a (65 66 67 10))
+
+##
 # strings are number-arrays with the first element having the string tag
 ("ABC")         # becomes (:str 65 66 67)
 (:str "ABC")    # is not equivalent, but (debug ...) will handle both (:str ...) and :str (...) as strings

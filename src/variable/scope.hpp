@@ -18,12 +18,18 @@ namespace ll {
             Scope(Scope* parent);
 
             Scope* getParent();
-            Variable* getVariable(const std::string &name);
-            bool hasVariable(const std::string &name);
+            Variable* getVariable(const std::string &name, Scope* alt_parent=NULL);
+            bool hasVariable(const std::string &name, Scope* alt_parent=NULL);
             bool localHasVariable(const std::string &name);
 
-            void addVariable(const std::string &name, Variable v, Runtime* runtime, SExpression* expression);
+//            void addVariable(const std::string &name, Variable v, Runtime* runtime, SExpression* expression);
             void setVariable(const std::string &name, SExpression *value);
+
+            std::vector<std::string> getVariableNames();
+
+        std::vector<Variable>* getVariables();
+
+        void setParent(Scope* parent);
     };
 }
 

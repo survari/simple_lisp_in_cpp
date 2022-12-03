@@ -15,7 +15,7 @@ namespace ll {
         public:
             Variable(const std::string &name, SExpression value);
 
-            std::string getName();
+            std::string getName() const;
             SExpression* getValue(Runtime* runtime, SExpression* parent);
 
             void setValue(SExpression* value);

@@ -54,6 +54,14 @@ namespace ll {
         SExpression eval(Runtime* runtime, SExpression* parent);
 
         void visualize(int indentation=0) const;
+
+        SExpression getTaggedValue(std::string tag);
+
+        bool hasTaggedValue(std::string tag);
+
+        void setScope(Scope* s);
+
+        SExpression runLambda(std::vector<SExpression> arguments, Runtime* runt, SExpression* parent);
     };
 }
 

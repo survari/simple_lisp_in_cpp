@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <regex>
+#include <fstream>
 
 #include "../runtime/runtime.hpp"
 #include "../../include/BeeNum/Brat.h"
@@ -106,7 +107,7 @@ std::string Token::toErrorMessage() const {
 
 #define TOKEN(type, value) Token(filename, line, start_column, type, value);
 #define PUSH(t, v) if (v != "" && v != " " && v != "\n" && v != "\t") { \
-    if (!push(runt, &tokens, Token(filename, line, start_column, t, v))) { \
+    if (!push(*runt, &tokens, Token(filename, line, start_column, t, v))) { \
         std::cout << "error tokenizing: unknown identifier: " << Token(filename, line, start_column, t, v).toErrorMessage() << std::endl; exit(1); \
     } else { \
         value = ""; \
@@ -216,7 +217,7 @@ bool push(const ll::Runtime &runt, std::vector<Token> *tokens, Token t) {
     return true;
 }
 
-std::vector<Token> Tokenizer::tokenize(const Runtime &runt, const std::string &filename, const std::string &source) {
+std::vector<Token> Tokenizer::tokenize(Runtime *runt, const std::string &filename, const std::string &source) {
     std::vector<Token> tokens;
 
     usize line = 1;
@@ -384,4 +385,16 @@ void visualize(const std::vector<Token> &tokens) {
             std::cout << " ";
         }
     }
+}
+
+std::string ll::read_file(const std::string &filename) {
+    std::ifstream t(filename);
+    std::stringstream buffer;
+
+    if (!t.is_open()) {
+        throw std::runtime_error("file not found: "+filename);
+    }
+
+    buffer << t.rdbuf();
+    return buffer.str();
 }
