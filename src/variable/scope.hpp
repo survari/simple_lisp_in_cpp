@@ -22,8 +22,9 @@ namespace ll {
             bool hasVariable(const std::string &name, Scope* alt_parent=NULL);
             bool localHasVariable(const std::string &name);
 
-//            void addVariable(const std::string &name, Variable v, Runtime* runtime, SExpression* expression);
-            void setVariable(const std::string &name, SExpression *value);
+//        void addVariable(const std::string &name, Variable v, Runtime* runtime, SExpression* expression);
+//        void setVariable(const std::string &signature, const std::string &name, SExpression *value);
+        void setVariable(const std::string &name, SExpression *value);
 
             std::vector<std::string> getVariableNames();
 

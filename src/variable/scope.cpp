@@ -69,6 +69,7 @@ bool Scope::localHasVariable(const std::string &name) {
 //    }
 //}
 
+//void Scope::setVariable(const std::string &signature, const std::string &name, SExpression* value) {
 void Scope::setVariable(const std::string &name, SExpression* value) {
     if (!hasVariable(name)) {
         this->variables.push_back(Variable(name, *value));

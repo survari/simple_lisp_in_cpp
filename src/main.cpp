@@ -20,10 +20,11 @@ int main(int argc, char* argv[]) {
     runt.init();
 
     std::vector<ll::Token> tokens = ll::Tokenizer::tokenize(&runt, filename, source);
-    ll::SExpression root = ll::Parser::parse(tokens, &root_scope);
-    runt.setRoot(&root_scope);
+    ll::SExpression root = ll::Parser::parse(tokens);
 
     for (ll::SExpression ex : *root.getList()) {
-        ex.eval(&runt, &root);
+//        std::cout << "------------------------ EVAL" << std::endl; ex.visualize();
+//        std::cout << "EVAL ------------------------" << std::endl;
+        ex.eval(&runt, &root_scope);
     }
 }

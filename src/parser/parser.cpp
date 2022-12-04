@@ -8,7 +8,7 @@ using namespace ll;
 
 SExpression build_variable_call(usize* index, const std::vector<std::string> names, Token root, SExpression *parent) {
     if (names.size() == 1) {
-        return SExpression(root, ExpressionType::ET_Identifier, {}, parent->getScope());
+        return SExpression(root, ExpressionType::ET_Identifier, {});
     }
 
     if (*index < names.size() && (*index)+2 < names.size()) {
@@ -16,15 +16,15 @@ SExpression build_variable_call(usize* index, const std::vector<std::string> nam
         copy.setType(TokenType::TT_Builtin);
         copy.setValue(std::string("of"));
 
-        SExpression e = SExpression(copy, ExpressionType::ET_Instruction, {}, parent->getScope());
-        e.addSExpression(SExpression(copy, ExpressionType::ET_Identifier, {}, parent->getScope()));
+        SExpression e = SExpression(copy, ExpressionType::ET_Instruction, {});
+        e.addSExpression(SExpression(copy, ExpressionType::ET_Identifier, {}));
         copy.setValue(names[names.size() - (*index) - 1]);
 
         (*index)++;
         e.addSExpression(build_variable_call(index, names, root, &e));
 
         copy.setType(TokenType::TT_Word);
-        e.addSExpression(SExpression(copy, ExpressionType::ET_Word, {}, parent->getScope()));
+        e.addSExpression(SExpression(copy, ExpressionType::ET_Word, {}));
         return e;
     }
 
@@ -32,16 +32,16 @@ SExpression build_variable_call(usize* index, const std::vector<std::string> nam
     copy.setType(TokenType::TT_Builtin);
     copy.setValue(std::string("of"));
 
-    SExpression e = SExpression(copy, ExpressionType::ET_Instruction, {}, parent->getScope());
-    e.addSExpression(SExpression(copy, ExpressionType::ET_Identifier, {}, parent->getScope()));
+    SExpression e = SExpression(copy, ExpressionType::ET_Instruction, {});
+    e.addSExpression(SExpression(copy, ExpressionType::ET_Identifier, {}));
 
     copy.setType(TokenType::TT_Word);
 
     copy.setValue(names[names.size() - (*index) - 2]);
-    e.addSExpression(SExpression(copy, ExpressionType::ET_Identifier, {}, parent->getScope()));
+    e.addSExpression(SExpression(copy, ExpressionType::ET_Identifier, {}));
 
     copy.setValue(names[names.size() - (*index) - 1]);
-    e.addSExpression(SExpression(copy, ExpressionType::ET_Word, {}, parent->getScope()));
+    e.addSExpression(SExpression(copy, ExpressionType::ET_Word, {}));
 
     return e;
 }
@@ -50,19 +50,17 @@ SExpression parse_expression(const std::vector<Token> &tokens,
     usize* index,
     usize indentation_level,
     std::vector<std::string> expression_tags,
-    ExpressionType type,
-    Scope* parent) {
+    ExpressionType type) {
 
     SExpression expression;
     std::vector<std::string> current_tags;
 
     if (*index < tokens.size()) {
-        expression = SExpression(tokens[*index], ET_Unknown, {}, parent);
+        expression = SExpression(tokens[*index], ET_Unknown, {});
     }
 
     expression.setType(type);
     expression.addTags(expression_tags);
-    expression.getScope()->setParent(parent);
 
     bool is_unevaluable = false;
 
@@ -111,8 +109,7 @@ SExpression parse_expression(const std::vector<Token> &tokens,
                index,
                indentation_level+1,
                current_tags,
-               type,
-               expression.getScope()));
+               type));
 
             current_tags.clear();
             type = ExpressionType::ET_Unknown;
@@ -129,7 +126,7 @@ SExpression parse_expression(const std::vector<Token> &tokens,
                 expression.setType(ET_List);
             }
 
-            SExpression list = SExpression(tokens[*index], ExpressionType::ET_List, current_tags, parent);
+            SExpression list = SExpression(tokens[*index], ExpressionType::ET_List, current_tags);
             list.addTag("str");
 
             for (usize c : tokens[*index].toString()) {
@@ -138,7 +135,7 @@ SExpression parse_expression(const std::vector<Token> &tokens,
                 t.setValue(BeeNum::Brat(c));
                 t.setType(TT_Number);
 
-                list.addSExpression(SExpression(t, ExpressionType::ET_Number, {}, parent));
+                list.addSExpression(SExpression(t, ExpressionType::ET_Number, {}));
             }
 
             expression.addSExpression(list);
@@ -172,7 +169,7 @@ SExpression parse_expression(const std::vector<Token> &tokens,
                 expression.addSExpression(ex);
 
             } else {
-                expression.addSExpression(SExpression(tokens[*index], type, current_tags, parent));
+                expression.addSExpression(SExpression(tokens[*index], type, current_tags));
             }
 
             current_tags.clear();
@@ -184,13 +181,13 @@ SExpression parse_expression(const std::vector<Token> &tokens,
             }
 
             type = ExpressionType::ET_Number;
-            expression.addSExpression(SExpression(tokens[*index], type, current_tags, parent));
+            expression.addSExpression(SExpression(tokens[*index], type, current_tags));
             current_tags.clear();
             type = ExpressionType::ET_Unknown;
 
         }  else if (tokens[*index].getType() == TokenType::TT_Builtin) {
             type = ExpressionType::ET_Identifier;
-            expression.addSExpression(SExpression(tokens[*index], type, current_tags, parent));
+            expression.addSExpression(SExpression(tokens[*index], type, current_tags));
             current_tags.clear();
             type = ExpressionType::ET_Unknown;
 
@@ -211,9 +208,9 @@ SExpression parse_expression(const std::vector<Token> &tokens,
     exit(1);
 }
 
-SExpression Parser::parse(std::vector<Token> tokens, Scope* root_scope) {
+SExpression Parser::parse(std::vector<Token> tokens) {
     usize index = 0;
-    SExpression e = parse_expression(tokens, &index, 0, { "root" }, ExpressionType::ET_Unknown, root_scope);
+    SExpression e = parse_expression(tokens, &index, 0, { "root" }, ExpressionType::ET_Unknown);
 
     if (index < tokens.size()) {
         throw std::runtime_error(std::string("parse_expression: error: too many parantheses after ") +

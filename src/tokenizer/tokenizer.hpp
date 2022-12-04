@@ -6,10 +6,11 @@
 
 #include "../../include/ll_std.h"
 #include "../../include/BeeNum/Brat.h"
-#include "../runtime/runtime.hpp"
 
 namespace ll {
+    class Runtime;
     std::string read_file(const std::string &filename);
+    BeeNum::Brat parse_number(const std::string &value);
 
     enum TokenType {
         TT_Word,

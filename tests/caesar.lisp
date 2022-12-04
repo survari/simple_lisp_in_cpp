@@ -1,4 +1,4 @@
-(include "inc/stdio.lisp")
+(load "inc/stdio.lisp")
 
 (let 'caesar_shift (fn ('message 'shift)
     (each message (fn ('e)

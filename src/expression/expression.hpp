@@ -6,6 +6,7 @@
 
 namespace ll {
     class Scope;
+    class SExpression;
 
     enum ExpressionType {
         // Unevaluable
@@ -29,11 +30,10 @@ namespace ll {
         std::vector<SExpression> list;
         std::vector<std::string> tags;
         ExpressionType type;
-        Scope* scope;
 
     public:
         SExpression();
-        SExpression(const Token &value, ExpressionType type, const std::vector<std::string> &tags, Scope* parent_scope);
+        SExpression(const Token &value, ExpressionType type, const std::vector<std::string> &tags);
         SExpression(ExpressionType type);
 
         SExpression* addSExpression(SExpression v);
@@ -45,23 +45,20 @@ namespace ll {
         bool includesTagRecursive(const std::string &tag) const;
         const std::vector<std::string> &getTags() const;
         std::vector<std::string> getTagsRecursive() const;
+        bool hasTaggedValue(std::string tag);
+        SExpression getTaggedValue(std::string tag);
+
         ExpressionType getType() const;
         const Token &getValue() const;
-        Scope *getScope();
 
         bool isEvaluable() const;
         std::vector<SExpression> *getList();
-        SExpression eval(Runtime* runtime, SExpression* parent);
+        SExpression eval(Runtime* runtime, Scope* scope);
 
         void visualize(int indentation=0) const;
+        std::string toString(int indentation = 0) const;
 
-        SExpression getTaggedValue(std::string tag);
-
-        bool hasTaggedValue(std::string tag);
-
-        void setScope(Scope* s);
-
-        SExpression runLambda(std::vector<SExpression> arguments, Runtime* runt, SExpression* parent);
+        SExpression runLambda(std::vector<SExpression> arguments, Runtime* runt, SExpression* parent, Scope* parent_scope);
     };
 }
 

@@ -136,7 +136,7 @@ bool is_tag(const std::string &value) {
     return std::regex_match(value, std::regex("^:[a-zA-Z]+[a-zA-Z0-9-_]*$"));
 }
 
-BeeNum::Brat parse_number(const std::string &value) {
+BeeNum::Brat ll::parse_number(const std::string &value) {
     // 1234.5678e9
     std::string base = "";      // 1234             m=0
     std::string decimal = "";   // 5678             m=1
@@ -184,7 +184,7 @@ BeeNum::Brat parse_number(const std::string &value) {
     if (exponent < 0) {
         return (BeeNum::Brat(base+decimal)) / BeeNum::Math::pow(BeeNum::Brat(10), decimal.size()) / BeeNum::Math::pow(BeeNum::Brat(10), abs(exponent));
     } else {
-        return (BeeNum::Brat(base+decimal)) / (BeeNum::Math::pow(BeeNum::Brat(10), decimal.size()) * BeeNum::Math::pow(BeeNum::Brat(10), exponent));
+        return (BeeNum::Brat(base+decimal)) / BeeNum::Math::pow(BeeNum::Brat(10), decimal.size()) * BeeNum::Math::pow(BeeNum::Brat(10), exponent);
     }
 }
 
@@ -196,7 +196,7 @@ bool push(const ll::Runtime &runt, std::vector<Token> *tokens, Token t) {
     if (t.getType() == TokenType::TT_Unknown) {
         if (is_number(t.toString())) {
             t.setType(TokenType::TT_Number);
-            t.setValue(parse_number(t.getStrValue()));
+            t.setValue(ll::parse_number(t.getStrValue()));
 
         } else if (is_builtin(runt, t.toString())) {
             t.setType(TokenType::TT_Builtin);

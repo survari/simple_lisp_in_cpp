@@ -98,6 +98,11 @@ std::string Brat::lisp_format_string() const {
         decimals.pop_back();
     }
 
+    while ((base == "0" || base.empty()) && exponent < 0 && exponent > -5) {
+        decimals.insert(decimals.begin(), '0');
+        exponent++;
+    }
+
     return base +
         (decimals.empty() ? "" : "."+decimals) +
         (exponent == 0 ? "" : "e"+std::to_string(exponent));
