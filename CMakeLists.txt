@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(include)
 include_directories(include/BeeNum)
-include_directories(include/bignum)
 include_directories(src/builtin)
 include_directories(src/expression)
 include_directories(src/llist)
@@ -29,11 +28,6 @@ add_executable(lisp_like
         include/BeeNum/Brat.h
         include/BeeNum/Math.cpp
         include/BeeNum/Math.h
-        include/bignum/bignum.cc
-        include/bignum/bignum.h
-        include/bignum/bits.h
-        include/bignum/hostint.h
-        include/bignum/wideint.h
         include/ll_std.h
         src/builtin/builtin.cpp
         src/builtin/builtin.hpp
