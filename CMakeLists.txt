@@ -13,7 +13,7 @@ include_directories(src/runtime)
 include_directories(src/tokenizer)
 include_directories(src/variable)
 
-add_executable(lisp_like
+add_executable(slicpp
         include/BeeNum/Bint/arithmetics.cpp
         include/BeeNum/Bint/bitoperations.cpp
         include/BeeNum/Bint/comparison.cpp

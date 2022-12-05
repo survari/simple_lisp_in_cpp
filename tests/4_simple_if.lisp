@@ -11,7 +11,7 @@
     (printc b)))
 
 # (debug e)
-(eval print (67 10 68 10))
+(eval "(print (67 10 68 10))")
 
 # (if (> a b)
 #     (printc a)
