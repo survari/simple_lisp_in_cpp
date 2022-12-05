@@ -91,6 +91,19 @@ void Scope::setVariable(const std::string &name, SExpression* value) {
     }
 }
 
+void Scope::setLocalVariable(const std::string &name, SExpression* value) {
+    if (!localHasVariable(name)) {
+        this->variables.push_back(Variable(name, *value));
+        return;
+    }
+
+    for (Variable &v : this->variables) {
+        if (v.getName() == name) {
+            v.setValue(new SExpression(*value));
+        }
+    }
+}
+
 std::vector<std::string> Scope::getVariableNames() {
     std::vector<std::string> variables;
 

@@ -259,7 +259,7 @@ void ll::Runtime::init() {
 
     this->addBuiltin(ll::Builtin(std::string("%"), [](Runtime* runt, SExpression* root, Scope* parent, SExpression* arguments) {
         if (arguments->getList()->size() != 2) {
-            throw std::runtime_error("too many/few arguments. '*' expects (only) 2 arguments: " + root->getValue().toErrorMessage());
+            throw std::runtime_error("too many/few arguments. '%' expects (only) 2 arguments: " + root->getValue().toErrorMessage());
             exit(1);
         }
 
@@ -304,6 +304,40 @@ void ll::Runtime::init() {
         }
 
         return num_to_expr(BeeNum::Brat((*arguments->getList())[0].getList()->size()), root->getValue());
+    }));
+
+    this->addBuiltin(ll::Builtin(std::string("floor"), [](Runtime* runt, SExpression* root, Scope* parent, SExpression* arguments) {
+        if (arguments->getList()->size() != 1) {
+            throw std::runtime_error("too many/few arguments. 'floor' expects (only) 1 argument: " + root->getValue().toErrorMessage());
+            exit(1);
+        }
+
+        BeeNum::Brat a = (*arguments->getList())[0].getValue().getNumValue();
+//        BeeNum::Brat b = BeeNum::Brat("1/2");
+//        BeeNum::Brat r = a + b;
+//
+//        if (r < BeeNum::Brat("0")) {
+//            r = BeeNum::Brat("0");
+//        }
+
+        return num_to_expr(ll::parse_number(a.point(0)), root->getValue());
+    }));
+
+    this->addBuiltin(ll::Builtin(std::string("ceil"), [](Runtime* runt, SExpression* root, Scope* parent, SExpression* arguments) {
+        if (arguments->getList()->size() != 1) {
+            throw std::runtime_error("too many/few arguments. 'ceil' expects (only) 1 argument: " + root->getValue().toErrorMessage());
+            exit(1);
+        }
+
+        BeeNum::Brat a = (*arguments->getList())[0].getValue().getNumValue();
+        BeeNum::Brat b = BeeNum::Brat("1/2");
+        BeeNum::Brat r = a + b;
+
+        if (r < BeeNum::Brat("0")) {
+            r = r * (-1);
+        }
+
+        return num_to_expr(ll::parse_number(r.point(0)), root->getValue());
     }));
 
     this->addBuiltin(ll::Builtin(std::string("printc"), [](Runtime* runt, SExpression* root, Scope* parent, SExpression* arguments) {

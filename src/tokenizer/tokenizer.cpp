@@ -106,7 +106,7 @@ std::string Token::toErrorMessage() const {
 }
 
 #define TOKEN(type, value) Token(filename, line, start_column, type, value);
-#define PUSH(t, v) if (v != "" && v != " " && v != "\n" && v != "\t") { \
+#define PUSH(t, v) if (!string && v != "" && v != " " && v != "\n" && v != "\t") { \
     if (!push(*runt, &tokens, Token(filename, line, start_column, t, v))) { \
         std::cout << "error tokenizing: unknown identifier: " << Token(filename, line, start_column, t, v).toErrorMessage() << std::endl; exit(1); \
     } else { \

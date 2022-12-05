@@ -31,6 +31,8 @@ namespace ll {
         std::vector<Variable>* getVariables();
 
         void setParent(Scope* parent);
+
+        void setLocalVariable(const std::string &name, SExpression* value);
     };
 }
 

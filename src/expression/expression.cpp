@@ -319,14 +319,15 @@ SExpression SExpression::runLambda(std::vector<SExpression> arguments, Runtime* 
     }
 
     for (int i = 0; i < parameters->size(); i++) {
-        if (parameters->at(i).getType() == ET_Identifier) {
-            scope->setVariable((*parameters)[i].value.toString(), &arguments[i]);
-        }
+//        if (parameters->at(i).getType() == ET_Identifier) {
+//            std::cout << parameters->at(i).value.toString() << " <=> " << &arguments[i] << std::endl;
+            scope->setLocalVariable(parameters->at(i).value.toString(), &arguments[i]);
+//        }
     }
 
     SExpression ret;
     for (int i = 1; i < instructions->size(); i++) {
-        ret = (*instructions)[i].eval(runt, scope);
+        ret = instructions->at(i).eval(runt, scope);
     }
 
     return ret;
