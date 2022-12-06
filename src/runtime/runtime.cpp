@@ -608,8 +608,13 @@ void ll::Runtime::init() {
             exit(1);
         }
 
-        const auto directory = std::filesystem::path{ root->getValue().getFilename() }.parent_path().string();
-        filename = directory + std::string("/") + filename;
+        std::filesystem::path pf{ filename };
+
+        if (pf.has_parent_path() && pf.parent_path().string()[0] != '/') {
+            const auto directory = std::filesystem::path{ root->getValue().getFilename() }.parent_path().string();
+            filename = directory + std::string("/") + filename;
+        }
+
         std::string source = read_file(filename);
         std::vector<Token> tokens = Tokenizer::tokenize(runt, filename, source);
         SExpression r = Parser::parse(tokens);
