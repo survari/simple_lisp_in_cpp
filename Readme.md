@@ -28,6 +28,16 @@ Code example:
 (println (caesar_decode encr 1))
 ```
 
+## Build
+
+Requires CMake and a C++17-compatible C++ compiler. Then run in project root:
+```
+cmake .
+make
+```
+
+**Notice:** There might be issues with Windows devices! Especially the `load` builtin might cause crashes due to path-conventions. 
+
 ## Todo
 
 - [ ] FFI integration to load C/C++ code from SLICPP
