@@ -1,4 +1,5 @@
-(let 'fak (fn (1) (0)))
-(let 'fak (fn ('e) (* e (fak (- e 1)))))
+(load "./inc/stdio.lisp")
 
-(debug (fak 3))
+(let 'fak (fn '(0) (1)))
+(let 'fak (fn '(1) (1)))
+(let 'fak (fn '('e) (* e (fak (- e 1)))))

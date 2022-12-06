@@ -24,15 +24,13 @@ namespace ll {
 
 //        void addVariable(const std::string &name, Variable v, Runtime* runtime, SExpression* expression);
 //        void setVariable(const std::string &signature, const std::string &name, SExpression *value);
-        void setVariable(const std::string &name, SExpression *value);
 
             std::vector<std::string> getVariableNames();
+            std::vector<Variable>* getVariables();
 
-        std::vector<Variable>* getVariables();
-
-        void setParent(Scope* parent);
-
-        void setLocalVariable(const std::string &name, SExpression* value);
+            void setParent(Scope* parent);
+            void setLocalVariable(Runtime* runtime, const std::string &name, SExpression* value);
+            void setVariable(Runtime* runtime, const std::string &name, SExpression *value);
     };
 }
 

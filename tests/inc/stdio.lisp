@@ -5,10 +5,10 @@
 (let 'println (fn ('e)
     (print (concat e 10))))
 
-(let 'i2s_2 (fn ('num 'str)
+(let 'i2s (fn ('num 'str)
     (if (> num 1)
-        (i2s_2 (floor (/ num 10)) (concat (+ (% num 10) 48) str))
+        (i2s (floor (/ num 10)) (concat (+ (% num 10) 48) str))
         (if (= num 1) (concat "1" str) str))))
 
 (let 'i2s (fn ('num)
-    (if (< num 10) (+ num 48) (i2s_2 num :str '()))))
+    (if (< num 10) (+ num 48) (i2s num :str '()))))

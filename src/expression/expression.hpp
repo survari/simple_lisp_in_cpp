@@ -59,6 +59,7 @@ namespace ll {
         std::string toString(int indentation = 0) const;
 
         SExpression runLambda(std::vector<SExpression> arguments, Runtime* runt, SExpression* parent, Scope* parent_scope);
+        std::string getLambdaSignature(Runtime* runt, Scope* parent_scope);
     };
 }
 

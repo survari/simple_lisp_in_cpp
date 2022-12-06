@@ -22,8 +22,8 @@
                 (ggT a (- b a)))))))
 
 (let 'test_cases '((12 3) (62 64) (24 64) (56 13) (21 35)))
-(each test_cases (fn ('e)       # e ist immer in der form (x y)
-    (let 'a (head e))           # head gibt das erste element zurück
-    (let 'b (head (tail e)))    # tail gibt die liste ohne das erste element zurück
+(each test_cases (fn ('e)       # e is always (x y)
+    (let 'a (head e))           # head returns the first element
+    (let 'b (head (tail e)))    # tail returns the list without the last element
 
     (println (concat "ggT(" (i2s a) ", " (i2s b) ") = " (i2s (ggT a b))))))

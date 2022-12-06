@@ -17,11 +17,13 @@ int main(int argc, char* argv[]) {
     const auto directory = std::filesystem::path{ filename }.parent_path().string();
     const auto name = std::filesystem::path{ filename }.filename().string();
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    filename = directory + "\\" + name;
-#else
-    filename = directory + "/" + name;
-#endif
+    if (!directory.empty()) {
+        #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+            filename = directory + "\\" + name;
+        #else
+            filename = directory + "/" + name;
+        #endif
+    }
 
     std::string source = ll::read_file(filename);
 

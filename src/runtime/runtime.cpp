@@ -96,7 +96,7 @@ void ll::Runtime::init() {
             exit(1);
         }
 
-        parent->setVariable(args[0].getValue().toString(), &args[1]);
+        parent->setVariable(runt, args[0].getValue().toString(), &args[1]);
         return args[1];
     }));
 
@@ -612,7 +612,10 @@ void ll::Runtime::init() {
 
         if (pf.has_parent_path() && pf.parent_path().string()[0] != '/') {
             const auto directory = std::filesystem::path{ root->getValue().getFilename() }.parent_path().string();
-            filename = directory + std::string("/") + filename;
+
+            if (!directory.empty()) {
+                filename = directory + std::string("/") + filename;
+            }
         }
 
         std::string source = read_file(filename);
@@ -651,9 +654,11 @@ void ll::Runtime::init() {
             exit(1);
         }
 
-        for (const SExpression &a : *(*arguments->getList())[0].getList()) {
+//        std::cout << "---" << std::endl;
+        for (SExpression &a : *(*arguments->getList())[0].getList()) {
             if (a.getType() != ExpressionType::ET_Word) {
-                throw std::runtime_error("fn expects a list of words as the first argument: " + root->getValue().toErrorMessage());
+//                a = a.eval(runt, parent);
+//                throw std::runtime_error("fn expects a list of words as the first argument: " + root->getValue().toErrorMessage());
             }
         }
 

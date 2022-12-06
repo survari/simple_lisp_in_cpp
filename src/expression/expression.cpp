@@ -89,19 +89,35 @@ SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
                             exit(1);
                         }
 
-                        SExpression lambda = *scope->getVariable(this->value.toString())->getValue(runtime, parent_scope);
+                        SExpression a;
+                        SExpression b;
                         std::vector<SExpression> arguments;
 
-                        if (lambda.getType() != ExpressionType::ET_Lambda) {
-                            throw std::runtime_error("variable is no lambda " + this->value.toErrorMessage());
+                        for (int i = 1; i < this->getList()->size(); i++) {
+                            SExpression e = this->getList()->at(i).eval(runtime, parent_scope);
+                            arguments.push_back(e);
+                            b.addSExpression(e);
+                        }
+
+                        a.addSExpression(b);
+                        Variable* v = scope->getVariable(this->value.toString());
+                        SExpression* v_value = v->getValue(runtime, scope);
+                        SExpression* lambda = v->getLambda(arguments);
+
+                        if (v_value->getType() != ExpressionType::ET_Lambda) {
+                            throw std::runtime_error("variable is no lambda: " + this->value.toErrorMessage());
                             exit(1);
                         }
 
-                        for (int i = 1; i < this->getList()->size(); i++) {
-                            arguments.push_back((*this->getList())[i]);
+                        if (lambda == NULL) {
+                            throw std::runtime_error("lambda has no matching signature for: [ " +
+                                a.getLambdaSignature(runtime, scope) +
+                                " ]\n      at:  " + this->value.toErrorMessage() +
+                                "\n\nhas following signatures: " + v->getSignatures(runtime, scope));
+                            exit(1);
                         }
 
-                        return lambda.runLambda(arguments, runtime, this, scope);
+                        return lambda->runLambda(arguments, runtime, this, scope);
                     }
 
                     case TokenType::TT_ParenthesesOpen: {
@@ -321,7 +337,7 @@ SExpression SExpression::runLambda(std::vector<SExpression> arguments, Runtime* 
     for (int i = 0; i < parameters->size(); i++) {
 //        if (parameters->at(i).getType() == ET_Identifier) {
 //            std::cout << parameters->at(i).value.toString() << " <=> " << &arguments[i] << std::endl;
-            scope->setLocalVariable(parameters->at(i).value.toString(), &arguments[i]);
+            scope->setLocalVariable(runt, parameters->at(i).value.toString(), &arguments[i]);
 //        }
     }
 
@@ -382,4 +398,19 @@ std::string SExpression::toString(int indentation) const {
 //    }
 
     return s;
+}
+
+std::string SExpression::getLambdaSignature(Runtime* runt, Scope* parent_scope) {
+    std::string signature = "";
+    std::vector<SExpression> parameters = *this->getList()->at(0).getList();
+
+    for (SExpression s : parameters) {
+        if (s.getType() != ExpressionType::ET_Word) {
+            signature += s.eval(runt, parent_scope).toString() + "`";
+        } else {
+            signature += "@`";
+        }
+    }
+
+    return signature;
 }
