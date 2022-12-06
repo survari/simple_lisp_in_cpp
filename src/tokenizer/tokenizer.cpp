@@ -99,14 +99,20 @@ void Token::setValue(BeeNum::Brat value) {
 }
 
 std::string Token::toErrorMessage() const {
+    std::string chars;
+
+    for (char c : this->toString()) {
+        chars += std::to_string(c) + " ";
+    }
+
     return std::string(this->getFilename() + ":"
         + std::to_string(this->getLine()) + ":"
         + std::to_string(this->getColumn()) + ": "
-        + this->toString());
+        + this->toString() + " [ " + chars + "]");
 }
 
 #define TOKEN(type, value) Token(filename, line, start_column, type, value);
-#define PUSH(t, v) if (!string && v != "" && v != " " && v != "\n" && v != "\t") { \
+#define PUSH(t, v) if (!string && v != "" && v != " " && v != "\n" && v != "\r" && v != "\t") { \
     if (!push(*runt, &tokens, Token(filename, line, start_column, t, v))) { \
         std::cout << "error tokenizing: unknown identifier: " << Token(filename, line, start_column, t, v).toErrorMessage() << std::endl; exit(1); \
     } else { \
@@ -189,7 +195,7 @@ BeeNum::Brat ll::parse_number(const std::string &value) {
 }
 
 bool push(const ll::Runtime &runt, std::vector<Token> *tokens, Token t) {
-    if (t.getStrValue() == "") {
+    if (t.getStrValue() == "" && t.getType() != TokenType::TT_String) {
         return true;
     }
 
@@ -235,7 +241,7 @@ std::vector<Token> Tokenizer::tokenize(Runtime *runt, const std::string &filenam
         column++;
 
         // handle whitespaces
-        while (i < source.size() && (source[i] == ' ' || source[i] == '\n' || source[i] == '\t') && !string) {
+        while (!string && i < source.size() && (source[i] == ' ' || source[i] == '\n' || source[i] == '\r' || source[i] == '\t')) {
             PUSH(type, value);
 
             if (source[i] == '\n') {
@@ -301,6 +307,9 @@ std::vector<Token> Tokenizer::tokenize(Runtime *runt, const std::string &filenam
                 string = true;
                 type = TokenType::TT_String;
             } else {
+                tokens.push_back(Token(filename, line, start_column, TokenType::TT_String, value));
+                value = "";
+                type = TokenType::TT_Unknown;
                 string = false;
             }
 

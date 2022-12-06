@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <filesystem>
 
 #include "runtime.hpp"
 #include "../builtin/builtin.hpp"
@@ -607,6 +608,8 @@ void ll::Runtime::init() {
             exit(1);
         }
 
+        const auto directory = std::filesystem::path{ root->getValue().getFilename() }.parent_path().string();
+        filename = directory + std::string("/") + filename;
         std::string source = read_file(filename);
         std::vector<Token> tokens = Tokenizer::tokenize(runt, filename, source);
         SExpression r = Parser::parse(tokens);
