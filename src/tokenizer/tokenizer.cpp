@@ -256,7 +256,7 @@ std::vector<Token> Tokenizer::tokenize(Runtime *runt, const std::string &filenam
         }
 
         // activate comment
-        if (!string && source[i] == '#') {
+        if (!string && (source[i] == '#' || source[i] == ';')) {
             PUSH(type, value);
 
             if (comment) {
@@ -282,8 +282,8 @@ std::vector<Token> Tokenizer::tokenize(Runtime *runt, const std::string &filenam
                         comment = false;
                     }
 
-                } else if (long_comment && source[i] == '#') {
-                    if (i+1 < source.size() && source[i+1] == '#') {
+                } else if (long_comment && (source[i] == '#' || source[i] == ';')) {
+                    if (i+1 < source.size() && (source[i+1] == '#' || source[i+1] == ';')) {
                         comment = false;
                         long_comment = false;
 
