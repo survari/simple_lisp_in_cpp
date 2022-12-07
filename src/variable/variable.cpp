@@ -131,7 +131,7 @@ std::string Variable::getSignatures(Runtime* runtime, Scope* scope) {
 
     for (it = this->value.begin(); it != this->value.end(); it++) {
         if (it->second != NULL) {
-            s += it->second->getLambdaSignature(runtime, scope);
+            s += "  - " + it->second->getLambdaSignature(runtime, scope) + "\n";
         }
     }
 

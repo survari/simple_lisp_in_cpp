@@ -113,7 +113,7 @@ SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
                             throw std::runtime_error("lambda has no matching signature for: [ " +
                                 a.getLambdaSignature(runtime, scope) +
                                 " ]\n      at:  " + this->value.toErrorMessage() +
-                                "\n\nhas following signatures: " + v->getSignatures(runtime, scope));
+                                "\n\nhas following signatures:\n" + v->getSignatures(runtime, scope));
                             exit(1);
                         }
 
