@@ -70,9 +70,9 @@ bool Scope::localHasVariable(const std::string &name) {
 //}
 
 //void Scope::setVariable(const std::string &signature, const std::string &name, SExpression* value) {
-void Scope::setVariable(Runtime* runtime, const std::string &name, SExpression* value) {
+void Scope::setVariable(Runtime* runtime, const std::string &name, SExpression value) {
     if (!hasVariable(name)) {
-        this->variables.push_back(Variable(runtime, this, name, *value));
+        this->variables.push_back(Variable(runtime, this, name, value));
         return;
 
     } else if (!localHasVariable(name)) {
@@ -80,26 +80,26 @@ void Scope::setVariable(Runtime* runtime, const std::string &name, SExpression* 
             return;
         }
 
-        this->parent->setVariable(runtime, name, new SExpression(*value));
+        this->parent->setVariable(runtime, name, SExpression(value));
         return;
     }
 
     for (Variable &v : this->variables) {
         if (v.getName() == name) {
-            v.setValue(runtime, this, new SExpression(*value));
+            v.setValue(runtime, this, SExpression(value));
         }
     }
 }
 
-void Scope::setLocalVariable(Runtime* runtime, const std::string &name, SExpression* value) {
+void Scope::setLocalVariable(Runtime* runtime, const std::string &name, SExpression value) {
     if (!localHasVariable(name)) {
-        this->variables.push_back(Variable(runtime, this, name, *value));
+        this->variables.push_back(Variable(runtime, this, name, value));
         return;
     }
 
     for (Variable &v : this->variables) {
         if (v.getName() == name) {
-            v.setValue(runtime, this, new SExpression(*value));
+            v.setValue(runtime, this, SExpression(value));
         }
     }
 }

@@ -73,7 +73,7 @@ SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
                         SExpression* arguments = new SExpression(ExpressionType::ET_List);
 
                         for (usize i = 1; i < this->list.size(); i++) {
-                            if ((name == "fn" && i > 1) || name == "if") {
+                            if (name == "fn" || name == "if") {
                                 arguments->addSExpression(this->list[i]); // do not evaluate expression! lazy evaluation etc.
                             } else {
                                 arguments->addSExpression(this->list[i].eval(runtime, scope));
@@ -89,40 +89,52 @@ SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
                             exit(1);
                         }
 
-                        SExpression a;
+//                        SExpression a;
                         SExpression b;
-                        std::vector<SExpression> arguments;
+//                        std::vector<SExpression> arguments;
 
                         for (int i = 1; i < this->getList()->size(); i++) {
                             SExpression e = this->getList()->at(i).eval(runtime, parent_scope);
-                            arguments.push_back(e);
+//                            arguments.push_back(e);
                             b.addSExpression(e);
                         }
 
-                        a.addSExpression(b);
+//                        a.addSExpression(b);
                         Variable* v = scope->getVariable(this->value.toString());
                         SExpression* v_value = v->getValue(runtime, scope);
-                        SExpression* lambda = v->getLambda(arguments);
-
+//                        SExpression* lambda = v_value;
+//
                         if (v_value->getType() != ExpressionType::ET_Lambda) {
                             throw std::runtime_error("variable is no lambda: " + this->value.toErrorMessage());
                             exit(1);
                         }
 
-                        if (lambda == NULL) {
-                            throw std::runtime_error("lambda has no matching signature for: [ " +
-                                a.getLambdaSignature(runtime, scope) +
-                                " ]\n      at:  " + this->value.toErrorMessage() +
-                                "\n\nhas following signatures:\n" + v->getSignatures(runtime, scope));
-                            exit(1);
+                        SExpression current;
+                        int currnet_variable_counter = INT16_MAX;
+
+                        for (SExpression e : v->getLambdas()) {
+                            int vc = e.matchLambdaArguments(b).second;
+                            if (vc != 0 && vc < currnet_variable_counter) {
+                                currnet_variable_counter = vc;
+                                current = e;
+                            }
                         }
 
-                        return lambda->runLambda(arguments, runtime, this, scope);
+                        if (currnet_variable_counter != INT16_MAX) {
+                            return current.runLambda(b, runtime, this, scope);
+                        }
+
+                        throw std::runtime_error("lambda has no matching signature for: [ "
+                            // a.getLambdaSignature(runtime, scope) +
+                            " ]\n      at:  " + this->value.toErrorMessage() +
+                            "\n\nhas following signatures:\n" + v_value->getLambdaSignature(runtime, scope));
+                        exit(1);
                     }
 
                     case TokenType::TT_ParenthesesOpen: {
                         SExpression lambda = (*this->getList())[0].eval(runtime, scope);
-                        std::vector<SExpression> arguments;
+                        SExpression arguments;
+                        arguments.setType(ExpressionType::ET_List);
 
                         if (lambda.getType() != ExpressionType::ET_Lambda) {
                             throw std::runtime_error("variable is no lambda " + this->value.toErrorMessage());
@@ -130,7 +142,7 @@ SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
                         }
 
                         for (int i = 1; i < this->getList()->size(); i++) {
-                            arguments.push_back((*this->getList())[i]);
+                            arguments.addSExpression((*this->getList())[i]);
                         }
 
                         return lambda.runLambda(arguments, runtime, this, scope);
@@ -310,36 +322,29 @@ bool SExpression::hasTaggedValue(std::string tag) {
     return false;
 }
 
-SExpression SExpression::runLambda(std::vector<SExpression> arguments, Runtime* runt, SExpression* parent, Scope* parent_scope) {
+SExpression run_lambda(SExpression* t,
+                       std::map<std::string,
+                       SExpression> arguments,
+                       Runtime* runt,
+                       SExpression* parent,
+                       Scope* parent_scope) {
+
     Scope* scope = new Scope();
     scope->setParent(parent_scope);
 
-    if (this->getType() != ExpressionType::ET_Lambda) {
-        throw std::runtime_error("function call is no lambda " + arguments[0].getValue().toErrorMessage());
+    std::map<std::string, SExpression>::iterator it;
+
+    for (it = arguments.begin(); it != arguments.end(); it++) {
+        scope->setVariable(runt, it->first, SExpression(it->second));
+    }
+
+    if (t->getType() != ExpressionType::ET_Lambda) {
+        throw std::runtime_error("function call is no lambda " + t->getList()->at(0).getValue().toErrorMessage());
         exit(1);
     }
 
-    std::vector<SExpression>* instructions = this->getList();
+    std::vector<SExpression>* instructions = t->getList();
     std::vector<SExpression>* parameters = (*instructions)[0].getList();
-
-    if (parameters->size() != arguments.size()) {
-        throw std::runtime_error("function call: given parameters ("+
-             std::to_string(arguments.size())+") does not match parameter length ("+
-             std::to_string(parameters->size())+"): " + arguments[0].getValue().toErrorMessage());
-
-        exit(1);
-    }
-
-    for (int i = 0; i < arguments.size(); i++) {
-        arguments[i] = arguments[i].eval(runt, scope);
-    }
-
-    for (int i = 0; i < parameters->size(); i++) {
-//        if (parameters->at(i).getType() == ET_Identifier) {
-//            std::cout << parameters->at(i).value.toString() << " <=> " << &arguments[i] << std::endl;
-            scope->setLocalVariable(runt, parameters->at(i).value.toString(), &arguments[i]);
-//        }
-    }
 
     SExpression ret;
     for (int i = 1; i < instructions->size(); i++) {
@@ -347,6 +352,31 @@ SExpression SExpression::runLambda(std::vector<SExpression> arguments, Runtime* 
     }
 
     return ret;
+}
+
+SExpression SExpression::runLambda(SExpression arguments, Runtime* runt, SExpression* parent, Scope* parent_scope) {
+    auto lambda_res = this->matchLambdaArguments(arguments);
+
+    if (lambda_res.second == 0) {
+        SExpression o_arguments = arguments;
+        arguments.setType(ExpressionType::ET_List);
+        arguments.getList()->clear();
+
+        for (int i = 1; i < o_arguments.getList()->size(); i++) {
+            SExpression e = o_arguments.getList()->at(i).eval(runt, parent_scope);
+            arguments.addSExpression(e);
+        }
+
+        lambda_res = matchLambdaArguments(arguments);
+
+        if (lambda_res.second == 0) {
+            throw std::runtime_error("lambda has no matching signature for: " + arguments.toString() +
+                                     "\n      at:  " + parent->getValue().toErrorMessage());
+            exit(1);
+        }
+    }
+
+    return run_lambda(this, lambda_res.first, runt, parent, parent_scope);
 }
 
 std::string SExpression::toString(int indentation) const {
@@ -357,13 +387,7 @@ std::string SExpression::toString(int indentation) const {
     }
 
     if (this->list.size() > 0 || this->type == ExpressionType::ET_List) {
-        if (indentation > 0 && this->type != ExpressionType::ET_List) {
-//            s += "\n";
-
-            for (int i = 0; i < indentation; i++)
-                s += "    ";
-
-        } else if (this->type == ExpressionType::ET_List) {
+        if (this->type == ExpressionType::ET_List) {
             s += "'";
         }
 
@@ -406,11 +430,67 @@ std::string SExpression::getLambdaSignature(Runtime* runt, Scope* parent_scope) 
 
     for (SExpression s : parameters) {
         if (s.getType() != ExpressionType::ET_Word) {
-            signature += s.eval(runt, parent_scope).toString() + "`";
+//            signature += s.eval(runt, parent_scope).toString() + "`";
+            signature += s.toString() + "`";
         } else {
             signature += "@`";
         }
     }
 
     return signature;
+}
+
+std::pair<std::map<std::string, SExpression>, int>
+    match_arguments(std::pair<std::map<std::string, SExpression>, int>* rules,
+                    std::vector<SExpression>* etemplate,
+                    std::vector<SExpression>* arguments) {
+
+    // if lengths are not the same, the rule does not match the parameter
+    if (etemplate->size() != arguments->size()) {
+//        std::cout << "<< NOT MATCHES >>" << std::endl;
+//        for (int i = 0; i < etemplate->size(); i++) {
+//            std::cout << " - " << etemplate->at(i).toString() << std::endl;
+//        }
+//
+//        for (int i = 0; i < arguments->size(); i++) {
+//            std::cout << " + " << arguments->at(i).toString() << std::endl;
+//        }
+//
+//        std::cout << ">> NOT MATCHES <<" << std::endl;
+        return {{}, 0};
+    }
+
+    for (usize i = 0; i < etemplate->size(); i++) {
+        // is placeholder
+        if (etemplate->at(i).getType() == ExpressionType::ET_Word) {
+            rules->first[etemplate->at(i).getValue().toString()] = arguments->at(i);
+            rules->second++;
+
+        // has to be evaluated
+        } else if (!etemplate->at(i).getList()->empty()) {
+            return match_arguments(rules,
+                                   etemplate->at(i).getList(),
+                                   arguments->at(i).getList());
+        } else {
+            if (etemplate->at(i).toString() != arguments->at(i).toString()) {
+                return {{}, 0};
+            }
+        }
+    }
+
+    return *rules;
+}
+
+// returns 0 if an error was detected, else returns 1 and the variables
+// words is a placeholder
+std::pair<std::map<std::string, SExpression>, int> SExpression::matchLambdaArguments(SExpression arguments) {
+    std::pair<std::map<std::string, SExpression>, int> rules = {{}, 1};
+    return match_arguments(&rules, this->getList()->at(0).getList(), arguments.getList());
+}
+
+SExpression::SExpression(const SExpression &e) {
+    this->value = e.value;
+    this->list = e.list;
+    this->type = e.type;
+    this->tags = e.tags;
 }

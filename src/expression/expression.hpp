@@ -2,6 +2,7 @@
 #define EXPRESSION_HPP
 
 #include <vector>
+#include <map>
 #include "../tokenizer/tokenizer.hpp"
 
 namespace ll {
@@ -33,6 +34,7 @@ namespace ll {
 
     public:
         SExpression();
+        SExpression(const SExpression &e);
         SExpression(const Token &value, ExpressionType type, const std::vector<std::string> &tags);
         SExpression(ExpressionType type);
 
@@ -58,8 +60,9 @@ namespace ll {
         void visualize(int indentation=0) const;
         std::string toString(int indentation = 0) const;
 
-        SExpression runLambda(std::vector<SExpression> arguments, Runtime* runt, SExpression* parent, Scope* parent_scope);
+        SExpression runLambda(SExpression arguments, Runtime* runt, SExpression* parent, Scope* parent_scope);
         std::string getLambdaSignature(Runtime* runt, Scope* parent_scope);
+        std::pair<std::map<std::string, SExpression>, int> matchLambdaArguments(SExpression arguments);
     };
 }
 

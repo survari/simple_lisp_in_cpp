@@ -13,7 +13,7 @@ namespace ll {
 
             std::string name;
 //            SExpression* value;
-            std::map<std::string, SExpression*> value;
+            std::vector<SExpression> value;
 
         public:
             Variable(Runtime* runt, Scope* scope, const std::string &name, SExpression value);
@@ -22,10 +22,10 @@ namespace ll {
 //            SExpression* getValue(const std::vector<std::string> &signature, Runtime* runtime, Scope* scope);
 //            void setValue(const std::vector<std::string> &signature, SExpression* value);
             SExpression* getValue(Runtime* runtime, Scope* scope);
-            SExpression* getLambda(std::vector<SExpression> args);
-            void setValue(Runtime* runtime, Scope* scope, SExpression* value);
+            std::vector<SExpression> getLambdas();
+            void setValue(Runtime* runtime, Scope* scope, SExpression value);
 
-        std::string getSignatures(Runtime* runtime, Scope* scope);
+//            std::string getSignatures(Runtime* runtime, Scope* scope);
     };
 }
 

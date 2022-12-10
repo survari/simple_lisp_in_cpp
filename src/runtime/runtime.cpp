@@ -96,7 +96,7 @@ void ll::Runtime::init() {
             exit(1);
         }
 
-        parent->setVariable(runt, args[0].getValue().toString(), &args[1]);
+        parent->setVariable(runt, args[0].getValue().toString(), args[1]);
         return args[1];
     }));
 
@@ -435,7 +435,9 @@ void ll::Runtime::init() {
         SExpression ret = SExpression(copy, ExpressionType::ET_List, {});
 
         for (SExpression e : list) {
-            ret.addSExpression(lambda.runLambda({ e }, runt, root, parent));
+            SExpression l;
+            l.addSExpression(e);
+            ret.addSExpression(lambda.runLambda(l, runt, root, parent));
         }
 
         return ret;
@@ -654,11 +656,8 @@ void ll::Runtime::init() {
             exit(1);
         }
 
-//        std::cout << "---" << std::endl;
         for (SExpression &a : *(*arguments->getList())[0].getList()) {
             if (a.getType() != ExpressionType::ET_Word) {
-//                a = a.eval(runt, parent);
-//                throw std::runtime_error("fn expects a list of words as the first argument: " + root->getValue().toErrorMessage());
             }
         }
 
