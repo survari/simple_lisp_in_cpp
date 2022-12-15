@@ -70,7 +70,7 @@ namespace ll {
     class Tokenizer {
     public:
         static std::vector<Token> tokenize(Runtime *runt, const std::string &filename, const std::string &source);
-        void visualize(const std::vector<Token> &tokens);
+        static void visualize(const std::vector<Token> &tokens);
     };
 }
 

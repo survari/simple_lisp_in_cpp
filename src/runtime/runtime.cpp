@@ -233,7 +233,7 @@ void ll::Runtime::init() {
     }));
 
     this->addBuiltin(ll::Builtin(std::string("+"), [](Runtime* runt, SExpression* root, Scope* parent, SExpression* arguments) {
-        if (arguments->getList()->size() <= 1) {
+        if (arguments->getList()->size() < 1) {
             throw std::runtime_error("too few arguments. '+' expects at least 1 argument: " + root->getValue().toErrorMessage());
             exit(1);
         }
@@ -486,7 +486,7 @@ void ll::Runtime::init() {
             }
 
         } else {
-            throw std::runtime_error("too many/few arguments. 'range' expects (only) 2 arguments: " + root->getValue().toErrorMessage());
+            throw std::runtime_error("too many/few arguments. 'if' expects (only) 2 arguments: " + root->getValue().toErrorMessage());
             exit(1);
         }
 
@@ -665,6 +665,109 @@ void ll::Runtime::init() {
         lambda.setType(ExpressionType::ET_Lambda);
 
         return lambda;
+    }));
+
+    // (filter <lambda> <list>)
+    this->addBuiltin(ll::Builtin(std::string("filter"), [](Runtime* runt, SExpression* root, Scope* parent, SExpression* arguments) {
+        if (arguments->getList()->size() != 2) {
+            throw std::runtime_error("too many/few arguments. 'filter' expects (only) 2 arguments: " + root->getValue().toErrorMessage());
+            exit(1);
+        }
+
+        std::vector<SExpression> list = *(*arguments->getList())[1].getList();
+        SExpression lambda = (*arguments->getList())[0];
+
+        Token copy = root->getValue();
+        copy.setValue(std::string("("));
+        copy.setType(TokenType::TT_ParenthesesOpen);
+
+        SExpression ret = SExpression(copy, ExpressionType::ET_List, {});
+
+        for (SExpression e : list) {
+            SExpression l;
+            l.addSExpression(e);
+
+            SExpression r = lambda.runLambda(l, runt, root, parent);
+
+            if (BeeNum::Brat(r.toString()) > BeeNum::Brat("0"))
+                ret.addSExpression(e);
+        }
+
+        return ret;
+    }));
+
+    this->addBuiltin(ll::Builtin(std::string("collect"), [](Runtime* runt, SExpression* root, Scope* parent, SExpression* arguments) {
+        return ll::SExpression();
+    }));
+
+    // (for <nfrom> <nto> <lambda>)
+    this->addBuiltin(ll::Builtin(std::string("for"), [](Runtime* runt, SExpression* root, Scope* parent, SExpression* arguments) {
+        if (arguments->getList()->size() != 3) {
+            throw std::runtime_error("too many/few arguments. 'for' expects (only) 3 arguments: " + root->getValue().toErrorMessage());
+            exit(1);
+        }
+
+        if (arguments->getList()->at(0).getType() != ExpressionType::ET_Number) {
+            throw std::runtime_error("too many/few arguments. 'for' expects two numbers as first two arguments: " + root->getValue().toErrorMessage());
+            exit(1);
+        }
+
+        if (arguments->getList()->at(1).getType() != ExpressionType::ET_Number) {
+            throw std::runtime_error("too many/few arguments. 'for' expects two numbers as first two arguments: " + root->getValue().toErrorMessage());
+            exit(1);
+        }
+
+        BeeNum::Brat from = (*arguments->getList())[0].getValue().getNumValue();
+        BeeNum::Brat to = (*arguments->getList())[1].getValue().getNumValue();
+        SExpression lambda = (*arguments->getList())[2];
+
+        Token copy = root->getValue();
+        copy.setValue(std::string("("));
+        copy.setType(TokenType::TT_ParenthesesOpen);
+
+        SExpression ret = SExpression(copy, ExpressionType::ET_List, {});
+
+        for (; from < to; from++) {
+            SExpression l;
+            l.addSExpression(num_to_expr(from, copy));
+            ret.addSExpression(lambda.runLambda(l, runt, root, parent));
+        }
+
+        return ret;
+    }));
+
+    // (dfor <nfrom> <nto> <lambda>) - for without saving the results
+    this->addBuiltin(ll::Builtin(std::string("dfor"), [](Runtime* runt, SExpression* root, Scope* parent, SExpression* arguments) {
+        if (arguments->getList()->size() != 3) {
+            throw std::runtime_error("too many/few arguments. 'dfor' expects (only) 3 arguments: " + root->getValue().toErrorMessage());
+            exit(1);
+        }
+
+        if (arguments->getList()->at(0).getType() != ExpressionType::ET_Number) {
+            throw std::runtime_error("too many/few arguments. 'dfor' expects two numbers as first two arguments: " + root->getValue().toErrorMessage());
+            exit(1);
+        }
+
+        if (arguments->getList()->at(1).getType() != ExpressionType::ET_Number) {
+            throw std::runtime_error("too many/few arguments. 'dfor' expects two numbers as first two arguments: " + root->getValue().toErrorMessage());
+            exit(1);
+        }
+
+        BeeNum::Brat from = (*arguments->getList())[0].getValue().getNumValue();
+        BeeNum::Brat to = (*arguments->getList())[1].getValue().getNumValue();
+        SExpression lambda = (*arguments->getList())[2];
+
+        Token copy = root->getValue();
+        copy.setValue(std::string("("));
+        copy.setType(TokenType::TT_ParenthesesOpen);
+
+        for (; from < to; from++) {
+            SExpression l;
+            l.addSExpression(num_to_expr(from, copy));
+            lambda.runLambda(l, runt, root, parent);
+        }
+
+        return SExpression();
     }));
 }
 

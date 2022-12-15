@@ -87,6 +87,7 @@ void Scope::setVariable(Runtime* runtime, const std::string &name, SExpression v
     for (Variable &v : this->variables) {
         if (v.getName() == name) {
             v.setValue(runtime, this, SExpression(value));
+            return;
         }
     }
 }
@@ -100,6 +101,7 @@ void Scope::setLocalVariable(Runtime* runtime, const std::string &name, SExpress
     for (Variable &v : this->variables) {
         if (v.getName() == name) {
             v.setValue(runtime, this, SExpression(value));
+            return;
         }
     }
 }

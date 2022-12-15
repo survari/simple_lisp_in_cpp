@@ -99,16 +99,10 @@ void Token::setValue(BeeNum::Brat value) {
 }
 
 std::string Token::toErrorMessage() const {
-    std::string chars;
-
-    for (char c : this->toString()) {
-        chars += std::to_string(c) + " ";
-    }
-
     return std::string(this->getFilename() + ":"
         + std::to_string(this->getLine()) + ":"
         + std::to_string(this->getColumn()) + ": "
-        + this->toString() + " [ " + chars + "]");
+        + this->toString());
 }
 
 #define TOKEN(type, value) Token(filename, line, start_column, type, value);
@@ -355,6 +349,12 @@ std::vector<Token> Tokenizer::tokenize(Runtime *runt, const std::string &filenam
     }
 
     return tokens;
+}
+
+void Tokenizer::visualize(const std::vector<Token> &tokens) {
+    for (const Token &t : tokens) {
+        std::cout << t.getType() << " - " << t.toString() << std::endl;
+    }
 }
 
 void visualize(const std::vector<Token> &tokens) {

@@ -169,7 +169,7 @@ SExpression parse_expression(const std::vector<Token> &tokens,
                 expression.addSExpression(ex);
 
             } else {
-                expression.addSExpression(SExpression(tokens[*index], type, current_tags));
+                expression.addSExpression(SExpression(tokens[*index], ExpressionType::ET_Word, current_tags));
             }
 
             current_tags.clear();

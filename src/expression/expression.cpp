@@ -49,18 +49,18 @@ std::vector<SExpression> *SExpression::getList() {
 
 SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
     // each expression evaluation has its own scope
-    Scope* scope = new Scope();
-    scope->setParent(parent_scope);
+    Scope scope = Scope();
+    scope.setParent(parent_scope);
 
     if (this->isEvaluable()) {
         switch (this->type) {
             case ExpressionType::ET_Identifier: { // Variable or Builtin: a=13
-                if (!scope->hasVariable(this->value.getStrValue(), scope)) {
+                if (!scope.hasVariable(this->value.getStrValue(), &scope)) {
                     throw std::runtime_error("unknown variable: " + this->getValue().toErrorMessage());
                     exit(1);
                 }
 
-                SExpression expression = SExpression(*scope->getVariable(this->getValue().getStrValue(), scope)->getValue(runtime, scope));
+                SExpression expression = SExpression(*scope.getVariable(this->getValue().getStrValue(), &scope)->getValue(runtime, &scope));
                 return expression;
             }
 
@@ -70,21 +70,21 @@ SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
                 {
                     case TokenType::TT_Builtin: {
                         std::string name = this->list[0].getValue().toString();
-                        SExpression* arguments = new SExpression(ExpressionType::ET_List);
+                        SExpression arguments = SExpression(ExpressionType::ET_List);
 
                         for (usize i = 1; i < this->list.size(); i++) {
                             if (name == "fn" || name == "if") {
-                                arguments->addSExpression(this->list[i]); // do not evaluate expression! lazy evaluation etc.
+                                arguments.addSExpression(this->list[i]); // do not evaluate expression! lazy evaluation etc.
                             } else {
-                                arguments->addSExpression(this->list[i].eval(runtime, scope));
+                                arguments.addSExpression(this->list[i].eval(runtime, &scope));
                             }
                         }
 
-                        return runtime->getBuiltin(name)->getLambda()(runtime, this, parent_scope, arguments);
+                        return runtime->getBuiltin(name)->getLambda()(runtime, this, parent_scope, &arguments);
                     }
 
                     case TokenType::TT_Word: {
-                        if (!scope->hasVariable(this->value.toString())) {
+                        if (!scope.hasVariable(this->value.toString())) {
                             throw std::runtime_error("variable does not exist " + this->value.toErrorMessage());
                             exit(1);
                         }
@@ -100,8 +100,8 @@ SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
                         }
 
 //                        a.addSExpression(b);
-                        Variable* v = scope->getVariable(this->value.toString());
-                        SExpression* v_value = v->getValue(runtime, scope);
+                        Variable* v = scope.getVariable(this->value.toString());
+                        SExpression* v_value = v->getValue(runtime, &scope);
 //                        SExpression* lambda = v_value;
 //
                         if (v_value->getType() != ExpressionType::ET_Lambda) {
@@ -121,18 +121,18 @@ SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
                         }
 
                         if (currnet_variable_counter != INT16_MAX) {
-                            return current.runLambda(b, runtime, this, scope);
+                            return current.runLambda(b, runtime, this, &scope);
                         }
 
                         throw std::runtime_error("lambda has no matching signature for: [ "
                             // a.getLambdaSignature(runtime, scope) +
                             " ]\n      at:  " + this->value.toErrorMessage() +
-                            "\n\nhas following signatures:\n" + v_value->getLambdaSignature(runtime, scope));
+                            "\n\nhas following signatures:\n" + v_value->getLambdaSignature(runtime, &scope));
                         exit(1);
                     }
 
                     case TokenType::TT_ParenthesesOpen: {
-                        SExpression lambda = (*this->getList())[0].eval(runtime, scope);
+                        SExpression lambda = (*this->getList())[0].eval(runtime, &scope);
                         SExpression arguments;
                         arguments.setType(ExpressionType::ET_List);
 
@@ -145,7 +145,7 @@ SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
                             arguments.addSExpression((*this->getList())[i]);
                         }
 
-                        return lambda.runLambda(arguments, runtime, this, scope);
+                        return lambda.runLambda(arguments, runtime, this, &scope);
                     }
 
                     default:
@@ -162,7 +162,7 @@ SExpression SExpression::eval(Runtime* runtime, Scope* parent_scope) {
                 evaluated.list.clear();
 
                 for (SExpression &ex : *this->getList()) {
-                    evaluated.addSExpression(ex.eval(runtime, scope));
+                    evaluated.addSExpression(ex.eval(runtime, &scope));
                 }
 
                 return evaluated;
@@ -329,13 +329,13 @@ SExpression run_lambda(SExpression* t,
                        SExpression* parent,
                        Scope* parent_scope) {
 
-    Scope* scope = new Scope();
-    scope->setParent(parent_scope);
+    Scope scope = Scope();
+    scope.setParent(parent_scope);
 
     std::map<std::string, SExpression>::iterator it;
 
     for (it = arguments.begin(); it != arguments.end(); it++) {
-        scope->setVariable(runt, it->first, SExpression(it->second));
+        scope.setLocalVariable(runt, it->first, SExpression(it->second));
     }
 
     if (t->getType() != ExpressionType::ET_Lambda) {
@@ -346,12 +346,14 @@ SExpression run_lambda(SExpression* t,
     std::vector<SExpression>* instructions = t->getList();
     std::vector<SExpression>* parameters = (*instructions)[0].getList();
 
-    SExpression ret;
     for (int i = 1; i < instructions->size(); i++) {
-        ret = instructions->at(i).eval(runt, scope);
+        if (i+1 >= instructions->size()) {
+            return instructions->at(i).eval(runt, &scope);
+        }
+
+        instructions->at(i).eval(runt, &scope);
     }
 
-    return ret;
 }
 
 SExpression SExpression::runLambda(SExpression arguments, Runtime* runt, SExpression* parent, Scope* parent_scope) {
